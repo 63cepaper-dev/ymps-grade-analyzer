@@ -27,7 +27,7 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 8mm 12mm 8mm 12mm;
+        margin: 8mm 15mm 8mm 15mm;
       }
       html, body {
         background: #ffffff !important;
@@ -73,8 +73,9 @@
         border: none !important;
         border-radius: 0 !important;
         margin: 0 !important;
-        padding: 0 !important;
+        padding: 0 1.5px !important;
         width: 100% !important;
+        box-sizing: border-box !important;
         height: auto !important;
         min-height: 0 !important;
         max-height: none !important;
@@ -122,7 +123,7 @@
             <span class="text-[10px] bg-indigo-700/80 text-indigo-200 px-1.5 py-0.5 rounded font-normal">全校通用版</span>
           </h1>
           <p class="text-[11px] text-indigo-200" id="top-school-subtitle">
-            113學年 第一學期 三年級 1~11 班 國語科
+            115學年 第一學期 三年級 1~11 班 國語科
           </p>
         </div>
       </div>
@@ -537,7 +538,7 @@
             <div>
               <label class="block text-slate-600 font-medium mb-1">學年度</label>
               <div class="flex items-center gap-1">
-                <input type="number" id="info-year" value="113" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
+                <input type="number" id="info-year" value="115" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
                 <span class="text-xs text-slate-500 shrink-0">學年</span>
               </div>
             </div>
@@ -687,7 +688,7 @@
           <!-- Title -->
           <div class="text-center pb-2 mb-3 border-b-2 border-black">
             <h2 class="serif-title text-xl sm:text-2xl font-black tracking-widest text-black" id="print-school-title">
-              高雄市陽明國小 113 學年度 第一學期 國語 科目 期中 評量 評量結果分析表
+              高雄市陽明國小 115 學年度 第一學期 國語 科目 期中 評量 評量結果分析表
             </h2>
           </div>
 
@@ -804,7 +805,7 @@
 
     let appState = {
       school: "高雄市陽明國小",
-      year: 113,
+      year: 115,
       semester: "一",
       subject: "國語",
       examPeriod: "期中",
@@ -901,7 +902,7 @@
         if (roomParam && roomParam.trim() !== "") {
           appState.roomCode = roomParam.trim();
         } else {
-          appState.roomCode = "YMPS113_G" + (appState.gradeNum || "3") + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
+          appState.roomCode = "YMPS115_G" + (appState.gradeNum || "3") + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
         }
         
         appState.classList = generateClassList(appState.gradeNum, appState.classCount);
@@ -996,7 +997,7 @@
     }
 
     function getSyncTopic() {
-      const raw = (appState.roomCode || "YMPS113_G3").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const raw = (appState.roomCode || "YMPS115_G3").toLowerCase().replace(/[^a-z0-9]/g, "");
       return "ymps_grade_" + raw;
     }
 
@@ -1019,7 +1020,7 @@
 
     async function initCloudRoomIfNeeded() {
       if (!appState.roomCode) {
-        appState.roomCode = "YMPS113_G" + (appState.gradeNum || "3") + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        appState.roomCode = "YMPS115_G" + (appState.gradeNum || "3") + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
         saveState();
         updateBrowserUrl();
         renderApp();
@@ -1192,7 +1193,9 @@
       };
     }
 
-    function generateReflectionDraft(summary) {
+    let reflectionVersionIndex = 0;
+
+    function generateReflectionDraft(summary, forceVariant = null) {
       const total = summary.totalCount || 1;
       const passCount = summary.sum100 + summary.sum90 + summary.sum80 + summary.sum70 + summary.sum60;
       const passRate = ((passCount / total) * 100).toFixed(1);
@@ -1200,7 +1203,8 @@
       const masterRate = ((masterCount / total) * 100).toFixed(1);
       const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
 
-      return `一、試題難易與評量整體表現：
+      const variants = [
+        `一、試題難易與評量整體表現：
 本次定期評量全學年成績呈良好常態分佈，全學年及格率達 ${passRate}%，80~99分中堅主力群佔比穩定（達 ${masterRate}%），展現教學常態落實與合理之評量鑑別度。
 
 二、學生學習狀況與常見錯誤樣態：
@@ -1211,7 +1215,63 @@
 2. 針對 60分以下學生（${summary.sumBelow60}人，${summary.ratioBelow60}%）進行個別診斷，針對特定單元落後提供客製化學習單補強。
 
 四、命題修正與研討建議：
-本次試題命題嚴謹、版面字體適中、題型多元兼顧素養，未來可延續此命題標準。`;
+本次試題命題嚴謹、版面字體適中、題型多元兼顧素養，未來可延續此命題標準。`,
+
+        `一、試題難易與評量整體表現：
+本學期定期評量強調素養導向命題，全學年及格率達 ${passRate}%，精熟層級（80分以上）佔 ${masterRate}%。試卷情境生活化，能引導學生將課本知識轉化為生活情境問題解決能力。
+
+二、學生學習狀況與常見錯誤樣態：
+學生在基礎識字、語詞記憶題型答對率偏高；但在高層次閱讀理解、長篇語段推論與跨段落歸納題型中，部分學生表現較為吃力，顯現深度閱讀與批判思考能力仍具精進空間。
+
+三、後續教學補救與補強措施：
+1. 持續深化課堂提問層次，融入六何法（5W1H）及心智圖鷹架，引導學生深層理解文本。
+2. 對於待加強群體（${summary.sumBelow60}人，${summary.ratioBelow60}%），實施分組合作學習與同儕小天使制度，強化基本語文素養奠基。
+
+四、命題修正與研討建議：
+建議未來命題可進一步精簡題幹字數，保留足夠作答思考時間，並適度提高圖文互轉之素養題型比例。`,
+
+        `一、試題難易與評量整體表現：
+全學年成績分佈曲線平穩對稱，高分群表現亮眼，總及格率為 ${passRate}%，中堅群（80~99分）佔比為 ${masterRate}%，顯示學年教學團隊進度掌握得宜，班級間教學落差極小。
+
+二、學生學習狀況與常見錯誤樣態：
+常見失分樣態主要反映在：(1)未細讀題目作答說明；(2)字音字形近形字辨析不夠精確；(3)閱讀題中因急於作答而未能完整比對文章細節。
+
+三、後續教學補救與補強措施：
+1. 推動課堂「精準讀題三部曲」：圈關鍵字、抓題目問法、答後自我檢驗。
+2. 啟動學年補救精進機制，針對未達及格標準學生（${summary.sumBelow60}人）安排晨光彈性時間實施個別化錯題重練與觀念釐清。
+
+四、命題修正與研討建議：
+試卷排版清晰易讀，各題型配分合理；建請下期試題可加強情境閱讀題的文字版面留白，提升學生閱題舒適度。`,
+
+        `一、試題難易與評量整體表現：
+本次評量命題兼顧基礎認知與高階思維，及格率達到 ${passRate}%，80分以上表現優異學生佔 ${masterRate}%。各分數級距分佈符合學生成長曲線，有效達成檢測學力指標之目的。
+
+二、學生學習狀況與常見錯誤樣態：
+高分群學生對文本細節掌握度極佳；中後段學生則容易在題意轉折處（如「何者非」、「下列何者錯誤」）產生審題疏漏，部分孩子在手寫作答時表達架構稍嫌零碎。
+
+三、後續教學補救與補強措施：
+1. 強化日常課堂形成性評量，透過口語表達與課堂即時反饋，增進學生統整敘事能力。
+2. 針對待加強學生（${summary.sumBelow60}人，${summary.ratioBelow60}%），運用數位自主學習平台與實體重點講義雙軌輔導，提升其基本學科自信。
+
+四、命題修正與研討建議：
+試題題型豐富多元，且涵蓋各單元重點；未來命題建議可在基礎題與挑戰題之間設計階梯式引導，使評量更具教學診斷價值。`,
+
+        `一、試題難易與評量整體表現：
+本次定期評量展現出穩定且健康的學生成績分佈，全學年及格率達 ${passRate}%，精熟達標率（≥80分）為 ${masterRate}%。試題難易梯度配置良好，既能兼顧基礎評鑑，亦具備辨識優異能力之效能。
+
+二、學生學習狀況與常見錯誤樣態：
+分析學生答題趨勢，主要盲點集中在抽象概念延伸推論題型，以及涉及文意脈絡轉折之判斷題；此外，作答時筆誤與漏答檢查不周也是失分主因之一。
+
+三、後續教學補救與補強措施：
+1. 實施差異化教學策略，對精熟學生提供進階延伸閱讀任務，對基礎學生則重在觀念釐清與反覆熟練。
+2. 針對需補救學生（${summary.sumBelow60}人）建立學習歷程檔案，落實每週追蹤，逐步補足單元缺口。
+
+四、命題修正與研討建議：
+命題團隊用心研發素養情境試題值得肯定，建議下階段命題可增加更多跨生活情境與圖表整合素材，深化學生多文本識讀能力。`
+      ];
+
+      const vIdx = forceVariant !== null ? forceVariant : (reflectionVersionIndex % variants.length);
+      return variants[vIdx];
     }
 
     function renderApp() {
@@ -1472,24 +1532,33 @@
       const row1Classes = list.slice(0, half);
       const row2Classes = list.slice(half);
 
-      // Make Row 1 and Row 2 have balanced cells
-      // If row2 has fewer cells than row1, append '命題教師' or '學年召集人'
-      if (row2Classes.length < row1Classes.length) {
-        row2Classes.push("命題教師");
+      // User requested: No 命題教師 box, keep blank if no class
+      while (row2Classes.length < row1Classes.length) {
+        row2Classes.push("");
       }
 
       const buildRow = (classes) => {
-        const colWidth = (100 / classes.length).toFixed(2);
-        return `<div class="flex w-full">` +
-          classes.map(c => `
-            <div style="width: ${colWidth}%;" class="border-r border-b border-black text-center flex flex-col box-border">
-              <div class="bg-slate-100 font-bold py-1 border-b border-black text-[11px] text-black">${c.includes("教師") ? c : c + " 導師"}</div>
-              <div class="h-10 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
-            </div>
-          `).join('') +
+        return `<div class="flex w-full box-border">` +
+          classes.map(c => {
+            if (!c) {
+              return `
+                <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
+                  <div class="bg-slate-50 py-1 border-b border-black text-[11px]">&nbsp;</div>
+                  <div class="h-10 flex items-center justify-center text-[10px]">&nbsp;</div>
+                </div>
+              `;
+            }
+            return `
+              <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
+                <div class="bg-slate-100 font-bold py-1 border-b border-black text-[11px] text-black whitespace-nowrap overflow-hidden">${c} 導師</div>
+                <div class="h-10 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
+              </div>
+            `;
+          }).join('') +
         `</div>`;
       };
 
+      container.className = "border-t border-l border-black w-full box-border";
       container.innerHTML = buildRow(row1Classes) + buildRow(row2Classes);
     }
 
@@ -1676,7 +1745,7 @@
           const c = btn.dataset.count || "11";
           const gName = gradeNameMap[g] || `${g}年級`;
           let base = window.location.href.split("?")[0];
-          const newRoom = "YMPS113_G" + g + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
+          const newRoom = "YMPS115_G" + g + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
           const link = `${base}?room=${newRoom}&grade=${g}&count=${c}&clean=1&openExternalBrowser=1`;
           safeCopy(link, `${gName} 全新專屬填報連結：`);
           showToast(`🎉 已成功複製【${gName}】全新專屬填報連結！
@@ -1714,7 +1783,7 @@
           appState.classData[c] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
         });
         appState.selectedClass = newList[0];
-        appState.roomCode = "YMPS113_G" + gNum + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
+        appState.roomCode = "YMPS115_G" + gNum + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
         saveState();
         renderApp();
         showToast(`已成功套用【${gName} ${cCount} 班】設定！`, "✅");
@@ -1794,11 +1863,13 @@
         saveState();
       });
       document.getElementById("btn-regenerate-reflection").addEventListener("click", () => {
+        reflectionVersionIndex = (reflectionVersionIndex + 1) % 5;
         const s = calculateSummary();
-        appState.reflection = generateReflectionDraft(s);
+        appState.reflection = generateReflectionDraft(s, reflectionVersionIndex);
         document.getElementById("textarea-reflection").value = appState.reflection;
         saveState();
-        showToast("已依最新全學年數據重新產出反思文字！", "💡");
+        const titles = ["常態分佈與評量鑑別分析", "核心素養導向與深度學習", "教學反思與精準補救", "多元評量與學力扎根", "差異化教學與學習診斷"];
+        showToast(`💡 已切換為【${titles[reflectionVersionIndex]}】觀點之反思內文！`, "💡");
       });
       document.getElementById("btn-copy-reflection").addEventListener("click", () => {
         safeCopy(document.getElementById("textarea-reflection").value, "反思修正文字：");
