@@ -27,91 +27,91 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 8mm 14mm 8mm 14mm;
+        margin: 10mm 15mm 10mm 15mm;
+      }
+      * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+        filter: none !important;
       }
       html, body {
         background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
-        height: 100% !important;
-        box-shadow: none !important;
-        overflow: hidden !important;
+        height: auto !important;
+        overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      /* Hide EVERYTHING except print modal */
-      body > :not(#print-modal) {
+      /* Hide ALL UI elements, navigation bars, and background webpage */
+      header, nav, main, footer, #toast, #copy-modal, #cloud-room-banner, #print-modal-header-bar, .no-print {
         display: none !important;
       }
-      main, header, nav, #cloud-room-banner, #print-modal-header-bar, #copy-modal, #toast, .no-print, #print-page-2 {
-        display: none !important;
-      }
+      /* Strip modal styling completely: pure white background and plain block flow */
       #print-modal {
+        display: block !important;
         position: static !important;
         inset: auto !important;
-        background: transparent !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-        height: 100% !important;
-        display: block !important;
-        box-shadow: none !important;
-        filter: none !important;
-        overflow: hidden !important;
+        height: auto !important;
+        overflow: visible !important;
+        z-index: auto !important;
       }
       #print-modal > div {
         display: block !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
+        overflow: visible !important;
       }
       #print-modal-content {
-        box-shadow: none !important;
-        filter: none !important;
-        border: none !important;
-        border-radius: 0 !important;
+        display: block !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
         padding: 0 !important;
         margin: 0 !important;
+        width: 100% !important;
         max-width: 100% !important;
         min-width: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        overflow: hidden !important;
-        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
       }
       .print-page {
-        box-shadow: none !important;
-        filter: none !important;
-        border: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        max-height: 100% !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
+        display: block !important;
         background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        box-shadow: none !important;
         page-break-after: avoid !important;
         page-break-before: avoid !important;
         break-after: avoid !important;
         break-before: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-        overflow: hidden !important;
+        overflow: visible !important;
       }
-      /* Prevent table border clipping */
       table {
         border-collapse: collapse !important;
         width: 100% !important;
+        box-sizing: border-box !important;
       }
       th, td {
         border: 1px solid #000000 !important;
+        box-sizing: border-box !important;
       }
     }
   </style>
@@ -119,7 +119,7 @@
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-12">
 
   <!-- Toast Notification -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300">
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300 no-print">
     <div class="bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 border border-slate-700">
       <span id="toast-icon">✅</span>
       <span id="toast-msg">操作成功</span>
@@ -127,7 +127,7 @@
   </div>
 
   <!-- Main Top Header -->
-  <header class="bg-indigo-900 text-white shadow-md">
+  <header class="bg-indigo-900 text-white shadow-md no-print">
     <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-lg bg-indigo-700 flex items-center justify-center text-lg font-bold shadow-inner">
@@ -157,7 +157,7 @@
     </div>
 
     <!-- Segmented Navigation Tabs -->
-    <nav id="mobile-nav-bar" class="bg-indigo-800/95 border-t border-indigo-600/60 px-2 py-1">
+    <nav id="mobile-nav-bar" class="bg-indigo-800/95 border-t border-indigo-600/60 px-2 py-1 no-print">
       <div class="max-w-5xl mx-auto flex items-center justify-between gap-1 sm:gap-2">
         <button class="nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-bold transition flex items-center justify-center gap-1 text-white bg-indigo-600 shadow-xs border border-indigo-400" data-target="tab-input">
           <span class="text-xs">✍️</span>
@@ -179,8 +179,7 @@
     </nav>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-5xl mx-auto px-3 sm:px-4 py-3 space-y-4">
+  <main class="max-w-5xl mx-auto px-3 sm:px-4 py-3 space-y-4 no-print">
 
     <!-- Zero-Setup Cloud Room Banner: Realtime Inter-Device Sync -->
     <div id="cloud-room-banner" class="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 text-white rounded-xl shadow-xs p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -676,7 +675,7 @@
   </main>
 
   <!-- ==================== A4 OFFICIAL PRINT / PDF MODAL ==================== -->
-  <div id="print-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex flex-col items-center justify-start overflow-y-auto p-2 sm:p-6 no-print">
+  <div id="print-modal" class="fixed inset-0 bg-slate-900/70 z-50 hidden flex flex-col items-center justify-start overflow-y-auto p-2 sm:p-6">
     
     <!-- Top Floating Toolbar -->
     <div id="print-modal-header-bar" class="w-full max-w-[210mm] bg-slate-900 text-white rounded-t-xl px-4 py-2.5 flex items-center justify-between no-print sticky top-0 shadow-lg z-10">
