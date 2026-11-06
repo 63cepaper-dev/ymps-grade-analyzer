@@ -27,7 +27,7 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 8mm 15mm 8mm 15mm;
+        margin: 6mm 14mm 6mm 14mm;
       }
       html, body {
         background: #ffffff !important;
@@ -693,39 +693,39 @@
           </div>
 
           <!-- Section 1: Basic Info Table -->
-          <div class="mb-3.5">
+          <div class="mb-2">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 試題名稱、版本、適用年級及命題教師：
             </div>
             <table class="w-full text-xs border border-black border-collapse text-center">
               <tbody>
                 <tr>
-                  <td class="font-bold bg-slate-100 p-2 w-1/4 border border-black">科目名稱</td>
-                  <td class="p-2 w-1/4 border border-black font-medium" id="print-table-subject">國語</td>
-                  <td class="font-bold bg-slate-100 p-2 w-1/4 border border-black">使用年級班別</td>
-                  <td class="p-2 w-1/4 border border-black font-medium" id="print-table-grade">三年級 1~11 班</td>
+                  <td class="font-bold bg-slate-100 p-1.5 w-1/4 border border-black">科目名稱</td>
+                  <td class="p-1.5 w-1/4 border border-black font-medium" id="print-table-subject">國語</td>
+                  <td class="font-bold bg-slate-100 p-1.5 w-1/4 border border-black">使用年級班別</td>
+                  <td class="p-1.5 w-1/4 border border-black font-medium" id="print-table-grade">三年級 1~11 班</td>
                 </tr>
                 <tr>
-                  <td class="font-bold bg-slate-100 p-2 border border-black">命題教師</td>
-                  <td class="p-2 border border-black font-medium" id="print-table-teacher">陳美玲 老師</td>
-                  <td class="font-bold bg-slate-100 p-2 border border-black">版　　本</td>
-                  <td class="p-2 border border-black font-medium" id="print-table-version">南一版</td>
+                  <td class="font-bold bg-slate-100 p-1.5 border border-black">命題教師</td>
+                  <td class="p-1.5 border border-black font-medium" id="print-table-teacher">陳美玲 老師</td>
+                  <td class="font-bold bg-slate-100 p-1.5 border border-black">版　　本</td>
+                  <td class="p-1.5 border border-black font-medium" id="print-table-version">南一版</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <!-- Section 2: Grade Distribution Table -->
-          <div class="mb-3.5">
+          <div class="mb-2">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 學年學生成績分布：
             </div>
             <table class="w-full text-xs border border-black border-collapse text-center">
               <thead class="bg-slate-100 font-bold border-b border-black">
                 <tr>
-                  <th class="p-2 border border-black w-1/3">分　　數</th>
-                  <th class="p-2 border border-black w-1/3">人　　數</th>
-                  <th class="p-2 border border-black w-1/3">比　　例</th>
+                  <th class="p-1.5 border border-black w-1/3">分　　數</th>
+                  <th class="p-1.5 border border-black w-1/3">人　　數</th>
+                  <th class="p-1.5 border border-black w-1/3">比　　例</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-black font-medium" id="print-distribution-body">
@@ -735,11 +735,11 @@
           </div>
 
           <!-- Section 3: Pedagogical Reflection Box -->
-          <div class="mb-4">
+          <div class="mb-2">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 反思修正：
             </div>
-            <div id="print-reflection-content" class="border border-black p-3.5 text-xs sm:text-[13px] leading-relaxed whitespace-pre-line font-serif min-h-[135px] bg-white">
+            <div id="print-reflection-content" class="border border-black p-2.5 text-[11px] sm:text-xs leading-relaxed whitespace-pre-line font-serif min-h-[110px] bg-white">
               <!-- Dynamically populated -->
             </div>
           </div>
@@ -748,7 +748,7 @@
         <!-- Bottom Section: Teacher Signature Grid + Admin Stamp -->
         <div class="pt-2">
           <!-- 兩排學年教師簽章專區 (平均分配、預留充足簽章格) -->
-          <div class="mb-3">
+          <div class="mb-2">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center justify-between">
               <div class="flex items-center gap-1">
                 <span>◆</span> 學年教師簽章：
@@ -884,6 +884,9 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           appState = Object.assign(appState, parsed);
+          if (appState.year === 113 || appState.year === "113") {
+            appState.year = 115;
+          }
         }
       } catch (e) {
         console.warn("Could not load from localStorage", e);
@@ -1204,70 +1207,70 @@
       const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
 
       const variants = [
-        `一、試題難易與評量整體表現：
-本次定期評量全學年成績呈良好常態分佈，全學年及格率達 ${passRate}%，80~99分中堅主力群佔比穩定（達 ${masterRate}%），展現教學常態落實與合理之評量鑑別度。
+        `一、試題難易與整體表現：
+本次定期評量全學年成績呈良好常態分佈，及格率達 ${passRate}%，80~99分中堅主力群穩定（達 ${masterRate}%），展現教學落實與合理鑑別度。
 
 二、學生學習狀況與常見錯誤樣態：
-多數學生成績已能掌握本學期${gName}核心課程指標；普遍失分點多在於「審題不夠周延」之習慣問題，以及需要靈活變通的情境題型。
+多數學生成績掌握本學期${gName}核心指標；普遍失分在於「審題不夠周延」之習慣問題，以及需靈活變通的情境題型。
 
 三、後續教學補救與補強措施：
-1. 加強審題檢查習慣培養，於課堂示範劃記題目關鍵字與自我檢證步驟。
-2. 針對 60分以下學生（${summary.sumBelow60}人，${summary.ratioBelow60}%）進行個別診斷，針對特定單元落後提供客製化學習單補強。
+1. 培養審題檢查習慣，示範劃記關鍵字與自我檢證步驟。
+2. 針對 60分以下學生（${summary.sumBelow60}人，${summary.ratioBelow60}%）進行個別診斷，提供客製化學習單補強。
 
 四、命題修正與研討建議：
-本次試題命題嚴謹、版面字體適中、題型多元兼顧素養，未來可延續此命題標準。`,
+本次試題命題嚴謹、字體適中、兼顧素養，可延續此命題標準。`,
 
-        `一、試題難易與評量整體表現：
-本學期定期評量強調素養導向命題，全學年及格率達 ${passRate}%，精熟層級（80分以上）佔 ${masterRate}%。試卷情境生活化，能引導學生將課本知識轉化為生活情境問題解決能力。
+        `一、試題難易與整體表現：
+評量強調素養導向，全學年及格率達 ${passRate}%，精熟層級（80分以上）佔 ${masterRate}%，試卷生活化，引導學科知識轉化為生活解難能力。
 
 二、學生學習狀況與常見錯誤樣態：
-學生在基礎識字、語詞記憶題型答對率偏高；但在高層次閱讀理解、長篇語段推論與跨段落歸納題型中，部分學生表現較為吃力，顯現深度閱讀與批判思考能力仍具精進空間。
+基礎識字題答對率高；高層次閱讀理解與語段推論題型較吃力，顯現深度思考與閱讀策略仍有進步空間。
 
 三、後續教學補救與補強措施：
-1. 持續深化課堂提問層次，融入六何法（5W1H）及心智圖鷹架，引導學生深層理解文本。
-2. 對於待加強群體（${summary.sumBelow60}人，${summary.ratioBelow60}%），實施分組合作學習與同儕小天使制度，強化基本語文素養奠基。
+1. 深化課堂提問層次，融入心智圖鷹架引導深層理解文本。
+2. 對待加強群體（${summary.sumBelow60}人，${summary.ratioBelow60}%）採同儕互助與合作學習，奠定基礎語文能力。
 
 四、命題修正與研討建議：
-建議未來命題可進一步精簡題幹字數，保留足夠作答思考時間，並適度提高圖文互轉之素養題型比例。`,
+建議未來命題精簡題幹字數，保留足夠思考時間，適度提高圖文轉換題型比例。`,
 
-        `一、試題難易與評量整體表現：
-全學年成績分佈曲線平穩對稱，高分群表現亮眼，總及格率為 ${passRate}%，中堅群（80~99分）佔比為 ${masterRate}%，顯示學年教學團隊進度掌握得宜，班級間教學落差極小。
+        `一、試題難易與整體表現：
+全學年成績曲線平穩對稱，高分群表現亮眼，及格率達 ${passRate}%，中堅群（80~99分）達 ${masterRate}%，教學進度掌握得宜，班級落差小。
 
 二、學生學習狀況與常見錯誤樣態：
-常見失分樣態主要反映在：(1)未細讀題目作答說明；(2)字音字形近形字辨析不夠精確；(3)閱讀題中因急於作答而未能完整比對文章細節。
+失分主因：(1)未細讀作答說明；(2)近形字辨析不夠精確；(3)閱讀題急於作答未完整比對文章細節。
 
 三、後續教學補救與補強措施：
-1. 推動課堂「精準讀題三部曲」：圈關鍵字、抓題目問法、答後自我檢驗。
-2. 啟動學年補救精進機制，針對未達及格標準學生（${summary.sumBelow60}人）安排晨光彈性時間實施個別化錯題重練與觀念釐清。
+1. 推動「精準讀題三部曲」：圈關鍵字、抓題目問法、答後自我檢驗。
+2. 啟動補救機制，對未達及格學生（${summary.sumBelow60}人）利用晨光時間個別化錯題重練。
 
 四、命題修正與研討建議：
-試卷排版清晰易讀，各題型配分合理；建請下期試題可加強情境閱讀題的文字版面留白，提升學生閱題舒適度。`,
+試卷排版清晰，各題型配分合理；建議下期情境題增加版面留白，提升閱卷舒適度。`,
 
-        `一、試題難易與評量整體表現：
-本次評量命題兼顧基礎認知與高階思維，及格率達到 ${passRate}%，80分以上表現優異學生佔 ${masterRate}%。各分數級距分佈符合學生成長曲線，有效達成檢測學力指標之目的。
+        `一、試題難易與整體表現：
+命題兼顧基礎認知與高階思維，及格率達 ${passRate}%，80分以上佔 ${masterRate}%，各分數級距分佈符合學生成長曲線，有效檢測學力指標。
 
 二、學生學習狀況與常見錯誤樣態：
-高分群學生對文本細節掌握度極佳；中後段學生則容易在題意轉折處（如「何者非」、「下列何者錯誤」）產生審題疏漏，部分孩子在手寫作答時表達架構稍嫌零碎。
+高分群對文本細節掌握佳；中後段學生易在否定句式（如「何者非」）產生疏漏，手寫作答表達架構稍零碎。
 
 三、後續教學補救與補強措施：
-1. 強化日常課堂形成性評量，透過口語表達與課堂即時反饋，增進學生統整敘事能力。
-2. 針對待加強學生（${summary.sumBelow60}人，${summary.ratioBelow60}%），運用數位自主學習平台與實體重點講義雙軌輔導，提升其基本學科自信。
+1. 強化課堂形成性評量，透過口語表達與課堂即時反饋，增進學生統整敘事能力。
+2. 針對待加強學生（${summary.sumBelow60}人，${summary.ratioBelow60}%），運用自主學習資源與重點講義雙軌輔導。
 
 四、命題修正與研討建議：
-試題題型豐富多元，且涵蓋各單元重點；未來命題建議可在基礎題與挑戰題之間設計階梯式引導，使評量更具教學診斷價值。`,
+題型豐富涵蓋各單元重點；未來命題建議可在基礎與挑戰題間設計階梯引導，強化診斷價值。`,
 
-        `一、試題難易與評量整體表現：
-本次定期評量展現出穩定且健康的學生成績分佈，全學年及格率達 ${passRate}%，精熟達標率（≥80分）為 ${masterRate}%。試題難易梯度配置良好，既能兼顧基礎評鑑，亦具備辨識優異能力之效能。
+        `一、試題難易與整體表現：
+本次定期評量展現健康穩定之成績分佈，及格率達 ${passRate}%，精熟達標率達 ${masterRate}%，梯度配置良好，兼顧基礎評鑑與鑑別度。
 
 二、學生學習狀況與常見錯誤樣態：
-分析學生答題趨勢，主要盲點集中在抽象概念延伸推論題型，以及涉及文意脈絡轉折之判斷題；此外，作答時筆誤與漏答檢查不周也是失分主因之一。
+學生答題盲點集中在抽象概念延伸推論及文意脈絡轉折判斷；此外作答時筆誤與漏答檢查不周亦為失分主因。
 
 三、後續教學補救與補強措施：
-1. 實施差異化教學策略，對精熟學生提供進階延伸閱讀任務，對基礎學生則重在觀念釐清與反覆熟練。
-2. 針對需補救學生（${summary.sumBelow60}人）建立學習歷程檔案，落實每週追蹤，逐步補足單元缺口。
+1. 實施差異化教學，精熟學生提供進階延伸任務，基礎學生重在觀念釐清與反覆熟練。
+2. 針對需補救學生（${summary.sumBelow60}人）建立學習歷程檔案，落實每週追蹤補足單元缺口。
 
 四、命題修正與研討建議：
-命題團隊用心研發素養情境試題值得肯定，建議下階段命題可增加更多跨生活情境與圖表整合素材，深化學生多文本識讀能力。`
+命題研發用心值得肯定，建議下階段命題可增加更多生活圖表整合素材，深化多文本識讀能力。`
       ];
 
       const vIdx = forceVariant !== null ? forceVariant : (reflectionVersionIndex % variants.length);
@@ -1544,14 +1547,14 @@
               return `
                 <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
                   <div class="bg-slate-50 py-1 border-b border-black text-[11px]">&nbsp;</div>
-                  <div class="h-10 flex items-center justify-center text-[10px]">&nbsp;</div>
+                  <div class="h-9 flex items-center justify-center text-[10px]">&nbsp;</div>
                 </div>
               `;
             }
             return `
               <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
                 <div class="bg-slate-100 font-bold py-1 border-b border-black text-[11px] text-black whitespace-nowrap overflow-hidden">${c} 導師</div>
-                <div class="h-10 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
+                <div class="h-9 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
               </div>
             `;
           }).join('') +
@@ -1586,39 +1589,39 @@
       if (distBody) {
         distBody.innerHTML = `
           <tr>
-            <td class="p-2 border border-black font-bold">100 分</td>
-            <td class="p-2 border border-black">${summary.sum100} 人</td>
-            <td class="p-2 border border-black">${summary.ratio100} %</td>
+            <td class="p-1.5 border border-black font-bold">100 分</td>
+            <td class="p-1.5 border border-black">${summary.sum100} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratio100} %</td>
           </tr>
           <tr>
-            <td class="p-2 border border-black font-bold">90~99 分</td>
-            <td class="p-2 border border-black">${summary.sum90} 人</td>
-            <td class="p-2 border border-black">${summary.ratio90} %</td>
+            <td class="p-1.5 border border-black font-bold">90~99 分</td>
+            <td class="p-1.5 border border-black">${summary.sum90} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratio90} %</td>
           </tr>
           <tr>
-            <td class="p-2 border border-black font-bold">80~89 分</td>
-            <td class="p-2 border border-black">${summary.sum80} 人</td>
-            <td class="p-2 border border-black">${summary.ratio80} %</td>
+            <td class="p-1.5 border border-black font-bold">80~89 分</td>
+            <td class="p-1.5 border border-black">${summary.sum80} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratio80} %</td>
           </tr>
           <tr>
-            <td class="p-2 border border-black font-bold">70~79 分</td>
-            <td class="p-2 border border-black">${summary.sum70} 人</td>
-            <td class="p-2 border border-black">${summary.ratio70} %</td>
+            <td class="p-1.5 border border-black font-bold">70~79 分</td>
+            <td class="p-1.5 border border-black">${summary.sum70} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratio70} %</td>
           </tr>
           <tr>
-            <td class="p-2 border border-black font-bold">60~69 分</td>
-            <td class="p-2 border border-black">${summary.sum60} 人</td>
-            <td class="p-2 border border-black">${summary.ratio60} %</td>
+            <td class="p-1.5 border border-black font-bold">60~69 分</td>
+            <td class="p-1.5 border border-black">${summary.sum60} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratio60} %</td>
           </tr>
           <tr>
-            <td class="p-2 border border-black font-bold">60 分以下</td>
-            <td class="p-2 border border-black">${summary.sumBelow60} 人</td>
-            <td class="p-2 border border-black">${summary.ratioBelow60} %</td>
+            <td class="p-1.5 border border-black font-bold">60 分以下</td>
+            <td class="p-1.5 border border-black">${summary.sumBelow60} 人</td>
+            <td class="p-1.5 border border-black">${summary.ratioBelow60} %</td>
           </tr>
           <tr class="bg-slate-100 font-bold">
-            <td class="p-2 border border-black">總人數</td>
-            <td class="p-2 border border-black">${summary.totalCount} 人</td>
-            <td class="p-2 border border-black">100.0 %</td>
+            <td class="p-1.5 border border-black">總人數</td>
+            <td class="p-1.5 border border-black">${summary.totalCount} 人</td>
+            <td class="p-1.5 border border-black">100.0 %</td>
           </tr>
         `;
       }
