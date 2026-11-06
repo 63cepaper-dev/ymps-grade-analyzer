@@ -27,20 +27,23 @@
     @media print {
       @page {
         size: A4 portrait;
-        margin: 6mm 14mm 6mm 14mm;
+        margin: 8mm 14mm 8mm 14mm;
       }
       html, body {
         background: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
-        height: auto !important;
+        height: 100% !important;
         box-shadow: none !important;
-        overflow: visible !important;
+        overflow: hidden !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      /* CRITICAL: Hide main background webpage so it never leaks into the PDF! */
+      /* Hide EVERYTHING except print modal */
+      body > :not(#print-modal) {
+        display: none !important;
+      }
       main, header, nav, #cloud-room-banner, #print-modal-header-bar, #copy-modal, #toast, .no-print, #print-page-2 {
         display: none !important;
       }
@@ -51,10 +54,19 @@
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
+        height: 100% !important;
         display: block !important;
         box-shadow: none !important;
         filter: none !important;
-        overflow: visible !important;
+        overflow: hidden !important;
+      }
+      #print-modal > div {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
       }
       #print-modal-content {
         box-shadow: none !important;
@@ -64,8 +76,11 @@
         padding: 0 !important;
         margin: 0 !important;
         max-width: 100% !important;
+        min-width: 0 !important;
         width: 100% !important;
-        background: #ffffff !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        background: transparent !important;
       }
       .print-page {
         box-shadow: none !important;
@@ -73,21 +88,22 @@
         border: none !important;
         border-radius: 0 !important;
         margin: 0 !important;
-        padding: 0 1.5px !important;
+        padding: 0 !important;
         width: 100% !important;
-        box-sizing: border-box !important;
-        height: auto !important;
-        min-height: 0 !important;
-        max-height: none !important;
+        height: 100% !important;
+        max-height: 100% !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
+        justify-content: space-between !important;
         background: #ffffff !important;
         page-break-after: avoid !important;
+        page-break-before: avoid !important;
         break-after: avoid !important;
+        break-before: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        overflow: hidden !important;
       }
       /* Prevent table border clipping */
       table {
@@ -632,7 +648,7 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-slate-600 font-medium mb-1">命題教師姓名</label>
-              <input type="text" id="info-teacher" value="陳美玲 老師" placeholder="例如：陳美玲 老師" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
+              <input type="text" id="info-teacher" value="蔡漢璁 老師" placeholder="例如：蔡漢璁 老師" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
             </div>
             <div>
               <label class="block text-slate-600 font-medium mb-1">教科書版本</label>
@@ -693,39 +709,39 @@
           </div>
 
           <!-- Section 1: Basic Info Table -->
-          <div class="mb-2">
+          <div class="mb-3">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 試題名稱、版本、適用年級及命題教師：
             </div>
             <table class="w-full text-xs border border-black border-collapse text-center">
               <tbody>
                 <tr>
-                  <td class="font-bold bg-slate-100 p-1.5 w-1/4 border border-black">科目名稱</td>
-                  <td class="p-1.5 w-1/4 border border-black font-medium" id="print-table-subject">國語</td>
-                  <td class="font-bold bg-slate-100 p-1.5 w-1/4 border border-black">使用年級班別</td>
-                  <td class="p-1.5 w-1/4 border border-black font-medium" id="print-table-grade">三年級 1~11 班</td>
+                  <td class="font-bold bg-slate-100 py-2 px-3 w-1/4 border border-black">科目名稱</td>
+                  <td class="py-2 px-3 w-1/4 border border-black font-medium" id="print-table-subject">國語</td>
+                  <td class="font-bold bg-slate-100 py-2 px-3 w-1/4 border border-black">使用年級班別</td>
+                  <td class="py-2 px-3 w-1/4 border border-black font-medium" id="print-table-grade">三年級 1~11 班</td>
                 </tr>
                 <tr>
-                  <td class="font-bold bg-slate-100 p-1.5 border border-black">命題教師</td>
-                  <td class="p-1.5 border border-black font-medium" id="print-table-teacher">陳美玲 老師</td>
-                  <td class="font-bold bg-slate-100 p-1.5 border border-black">版　　本</td>
-                  <td class="p-1.5 border border-black font-medium" id="print-table-version">南一版</td>
+                  <td class="font-bold bg-slate-100 py-2 px-3 border border-black">命題教師</td>
+                  <td class="py-2 px-3 border border-black font-medium" id="print-table-teacher">蔡漢璁 老師</td>
+                  <td class="font-bold bg-slate-100 py-2 px-3 border border-black">版　　本</td>
+                  <td class="py-2 px-3 border border-black font-medium" id="print-table-version">南一版</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <!-- Section 2: Grade Distribution Table -->
-          <div class="mb-2">
+          <div class="mb-3">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 學年學生成績分布：
             </div>
             <table class="w-full text-xs border border-black border-collapse text-center">
               <thead class="bg-slate-100 font-bold border-b border-black">
                 <tr>
-                  <th class="p-1.5 border border-black w-1/3">分　　數</th>
-                  <th class="p-1.5 border border-black w-1/3">人　　數</th>
-                  <th class="p-1.5 border border-black w-1/3">比　　例</th>
+                  <th class="py-2 px-3 border border-black w-1/3">分　　數</th>
+                  <th class="py-2 px-3 border border-black w-1/3">人　　數</th>
+                  <th class="py-2 px-3 border border-black w-1/3">比　　例</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-black font-medium" id="print-distribution-body">
@@ -735,11 +751,11 @@
           </div>
 
           <!-- Section 3: Pedagogical Reflection Box -->
-          <div class="mb-2">
+          <div class="mb-3">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
               <span>◆</span> 反思修正：
             </div>
-            <div id="print-reflection-content" class="border border-black p-2.5 text-[11px] sm:text-xs leading-relaxed whitespace-pre-line font-serif min-h-[110px] bg-white">
+            <div id="print-reflection-content" class="border border-black p-3.5 text-xs sm:text-[13px] leading-relaxed whitespace-pre-line font-serif min-h-[160px] bg-white">
               <!-- Dynamically populated -->
             </div>
           </div>
@@ -748,7 +764,7 @@
         <!-- Bottom Section: Teacher Signature Grid + Admin Stamp -->
         <div class="pt-2">
           <!-- 兩排學年教師簽章專區 (平均分配、預留充足簽章格) -->
-          <div class="mb-2">
+          <div class="mb-3">
             <div class="text-xs font-bold text-slate-900 mb-1 flex items-center justify-between">
               <div class="flex items-center gap-1">
                 <span>◆</span> 學年教師簽章：
@@ -809,7 +825,7 @@
       semester: "一",
       subject: "國語",
       examPeriod: "期中",
-      teacher: "陳美玲 老師",
+      teacher: "蔡漢璁 老師",
       version: "南一版",
       gradeNum: "3",
       gradeLabel: "三年級 1~11 班",
@@ -884,6 +900,9 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           appState = Object.assign(appState, parsed);
+      if (!appState.teacher || appState.teacher === "陳美玲 老師") {
+        appState.teacher = "蔡漢璁 老師";
+      }
           if (appState.year === 113 || appState.year === "113") {
             appState.year = 115;
           }
@@ -1547,14 +1566,14 @@
               return `
                 <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
                   <div class="bg-slate-50 py-1 border-b border-black text-[11px]">&nbsp;</div>
-                  <div class="h-9 flex items-center justify-center text-[10px]">&nbsp;</div>
+                  <div class="h-11 flex items-center justify-center text-[10px]">&nbsp;</div>
                 </div>
               `;
             }
             return `
               <div class="flex-1 border-r border-b border-black text-center flex flex-col box-border">
                 <div class="bg-slate-100 font-bold py-1 border-b border-black text-[11px] text-black whitespace-nowrap overflow-hidden">${c} 導師</div>
-                <div class="h-9 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
+                <div class="h-11 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
               </div>
             `;
           }).join('') +
@@ -1589,39 +1608,39 @@
       if (distBody) {
         distBody.innerHTML = `
           <tr>
-            <td class="p-1.5 border border-black font-bold">100 分</td>
-            <td class="p-1.5 border border-black">${summary.sum100} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratio100} %</td>
+            <td class="py-2 px-3 border border-black font-bold">100 分</td>
+            <td class="py-2 px-3 border border-black">${summary.sum100} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratio100} %</td>
           </tr>
           <tr>
-            <td class="p-1.5 border border-black font-bold">90~99 分</td>
-            <td class="p-1.5 border border-black">${summary.sum90} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratio90} %</td>
+            <td class="py-2 px-3 border border-black font-bold">90~99 分</td>
+            <td class="py-2 px-3 border border-black">${summary.sum90} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratio90} %</td>
           </tr>
           <tr>
-            <td class="p-1.5 border border-black font-bold">80~89 分</td>
-            <td class="p-1.5 border border-black">${summary.sum80} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratio80} %</td>
+            <td class="py-2 px-3 border border-black font-bold">80~89 分</td>
+            <td class="py-2 px-3 border border-black">${summary.sum80} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratio80} %</td>
           </tr>
           <tr>
-            <td class="p-1.5 border border-black font-bold">70~79 分</td>
-            <td class="p-1.5 border border-black">${summary.sum70} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratio70} %</td>
+            <td class="py-2 px-3 border border-black font-bold">70~79 分</td>
+            <td class="py-2 px-3 border border-black">${summary.sum70} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratio70} %</td>
           </tr>
           <tr>
-            <td class="p-1.5 border border-black font-bold">60~69 分</td>
-            <td class="p-1.5 border border-black">${summary.sum60} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratio60} %</td>
+            <td class="py-2 px-3 border border-black font-bold">60~69 分</td>
+            <td class="py-2 px-3 border border-black">${summary.sum60} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratio60} %</td>
           </tr>
           <tr>
-            <td class="p-1.5 border border-black font-bold">60 分以下</td>
-            <td class="p-1.5 border border-black">${summary.sumBelow60} 人</td>
-            <td class="p-1.5 border border-black">${summary.ratioBelow60} %</td>
+            <td class="py-2 px-3 border border-black font-bold">60 分以下</td>
+            <td class="py-2 px-3 border border-black">${summary.sumBelow60} 人</td>
+            <td class="py-2 px-3 border border-black">${summary.ratioBelow60} %</td>
           </tr>
           <tr class="bg-slate-100 font-bold">
-            <td class="p-1.5 border border-black">總人數</td>
-            <td class="p-1.5 border border-black">${summary.totalCount} 人</td>
-            <td class="p-1.5 border border-black">100.0 %</td>
+            <td class="py-2 px-3 border border-black">總人數</td>
+            <td class="py-2 px-3 border border-black">${summary.totalCount} 人</td>
+            <td class="py-2 px-3 border border-black">100.0 %</td>
           </tr>
         `;
       }
