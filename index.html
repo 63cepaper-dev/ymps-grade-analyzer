@@ -1495,146 +1495,79 @@
 
     function openPrintModal() {
       const summary = calculateSummary();
-      const currentGradeName = gradeNameMap[appState.gradeNum] || appState.gradeLabel || "三年級";
 
       // Populate Page 1 Header
-      document.getElementById("print-school-title").textContent = 
-        `${appState.school} ${appState.year} 學年度 第${appState.semester}學期 ${appState.subject} 科目 ${appState.examPeriod} 評量 評量結果分析表`;
+      const titleEl = document.getElementById("print-school-title");
+      if (titleEl) {
+        titleEl.textContent = `${appState.school} ${appState.year} 學年度 第${appState.semester}學期 ${appState.subject} 科目 ${appState.examPeriod} 評量 評量結果分析表`;
+      }
       
-      document.getElementById("print-table-subject").textContent = appState.subject;
-      document.getElementById("print-table-grade").textContent = appState.gradeLabel;
-      document.getElementById("print-table-teacher").textContent = appState.teacher;
-      document.getElementById("print-table-version").textContent = appState.version;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      setVal("print-table-subject", appState.subject);
+      setVal("print-table-grade", appState.gradeLabel);
+      setVal("print-table-teacher", appState.teacher);
+      setVal("print-table-version", appState.version);
 
       // Populate Page 1 Table
       const distBody = document.getElementById("print-distribution-body");
-      distBody.innerHTML = `
-        <tr>
-          <td class="p-2 border border-black font-bold">100 分</td>
-          <td class="p-2 border border-black">${summary.sum100} 人</td>
-          <td class="p-2 border border-black">${summary.ratio100} %</td>
-        </tr>
-        <tr>
-          <td class="p-2 border border-black font-bold">90~99 分</td>
-          <td class="p-2 border border-black">${summary.sum90} 人</td>
-          <td class="p-2 border border-black">${summary.ratio90} %</td>
-        </tr>
-        <tr>
-          <td class="p-2 border border-black font-bold">80~89 分</td>
-          <td class="p-2 border border-black">${summary.sum80} 人</td>
-          <td class="p-2 border border-black">${summary.ratio80} %</td>
-        </tr>
-        <tr>
-          <td class="p-2 border border-black font-bold">70~79 分</td>
-          <td class="p-2 border border-black">${summary.sum70} 人</td>
-          <td class="p-2 border border-black">${summary.ratio70} %</td>
-        </tr>
-        <tr>
-          <td class="p-2 border border-black font-bold">60~69 分</td>
-          <td class="p-2 border border-black">${summary.sum60} 人</td>
-          <td class="p-2 border border-black">${summary.ratio60} %</td>
-        </tr>
-        <tr>
-          <td class="p-2 border border-black font-bold">60 分以下</td>
-          <td class="p-2 border border-black">${summary.sumBelow60} 人</td>
-          <td class="p-2 border border-black">${summary.ratioBelow60} %</td>
-        </tr>
-        <tr class="bg-slate-100 font-bold">
-          <td class="p-2 border border-black">總人數</td>
-          <td class="p-2 border border-black">${summary.totalCount} 人</td>
-          <td class="p-2 border border-black">100.0 %</td>
-        </tr>
-      `;
+      if (distBody) {
+        distBody.innerHTML = `
+          <tr>
+            <td class="p-2 border border-black font-bold">100 分</td>
+            <td class="p-2 border border-black">${summary.sum100} 人</td>
+            <td class="p-2 border border-black">${summary.ratio100} %</td>
+          </tr>
+          <tr>
+            <td class="p-2 border border-black font-bold">90~99 分</td>
+            <td class="p-2 border border-black">${summary.sum90} 人</td>
+            <td class="p-2 border border-black">${summary.ratio90} %</td>
+          </tr>
+          <tr>
+            <td class="p-2 border border-black font-bold">80~89 分</td>
+            <td class="p-2 border border-black">${summary.sum80} 人</td>
+            <td class="p-2 border border-black">${summary.ratio80} %</td>
+          </tr>
+          <tr>
+            <td class="p-2 border border-black font-bold">70~79 分</td>
+            <td class="p-2 border border-black">${summary.sum70} 人</td>
+            <td class="p-2 border border-black">${summary.ratio70} %</td>
+          </tr>
+          <tr>
+            <td class="p-2 border border-black font-bold">60~69 分</td>
+            <td class="p-2 border border-black">${summary.sum60} 人</td>
+            <td class="p-2 border border-black">${summary.ratio60} %</td>
+          </tr>
+          <tr>
+            <td class="p-2 border border-black font-bold">60 分以下</td>
+            <td class="p-2 border border-black">${summary.sumBelow60} 人</td>
+            <td class="p-2 border border-black">${summary.ratioBelow60} %</td>
+          </tr>
+          <tr class="bg-slate-100 font-bold">
+            <td class="p-2 border border-black">總人數</td>
+            <td class="p-2 border border-black">${summary.totalCount} 人</td>
+            <td class="p-2 border border-black">100.0 %</td>
+          </tr>
+        `;
+      }
 
       // Reflection
-      document.getElementById("print-reflection-content").textContent = 
-        document.getElementById("textarea-reflection").value || generateReflectionDraft(summary);
+      const refEl = document.getElementById("print-reflection-content");
+      if (refEl) {
+        refEl.textContent = document.getElementById("textarea-reflection")?.value || generateReflectionDraft(summary);
+      }
 
       // Render 2-Row Teacher Signature Grid
       renderTeacherSignatureGrid();
 
-      // Populate Page 2
-      document.getElementById("print-page2-title").textContent = 
-        `${appState.school} ${appState.year} 學年度 第${appState.semester}學期 ${appState.gradeLabel} ${appState.subject}科 評量統計明細表`;
-      
-      const matrixBody = document.getElementById("print-matrix-body");
-      matrixBody.innerHTML = "";
-      appState.classList.forEach(cId => {
-        const d = appState.classData[cId];
-        const isF = d && d.filled;
-        const total = isF ? ((d.c100||0)+(d.c90||0)+(d.c80||0)+(d.c70||0)+(d.c60||0)+(d.cBelow60||0)) : 0;
-        const pass = isF ? ((d.c100||0)+(d.c90||0)+(d.c80||0)+(d.c70||0)+(d.c60||0)) : 0;
-        const rate = isF && total > 0 ? ((pass/total)*100).toFixed(1) + "%" : "-";
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="p-1.5 border border-black font-bold">${cId}班</td>
-          <td class="p-1.5 border border-black">${isF ? d.c100 : "-"}</td>
-          <td class="p-1.5 border border-black">${isF ? d.c90 : "-"}</td>
-          <td class="p-1.5 border border-black">${isF ? d.c80 : "-"}</td>
-          <td class="p-1.5 border border-black">${isF ? d.c70 : "-"}</td>
-          <td class="p-1.5 border border-black">${isF ? d.c60 : "-"}</td>
-          <td class="p-1.5 border border-black">${isF ? d.cBelow60 : "-"}</td>
-          <td class="p-1.5 border border-black font-bold">${isF ? total : "-"}</td>
-          <td class="p-1.5 border border-black font-bold">${rate}</td>
-        `;
-        matrixBody.appendChild(tr);
-      });
-
-      // Total Row
-      const passTotal = summary.sum100 + summary.sum90 + summary.sum80 + summary.sum70 + summary.sum60;
-      const passTotalRate = summary.totalCount > 0 ? ((passTotal / summary.totalCount) * 100).toFixed(1) + "%" : "0.0%";
-      const trTotal = document.createElement("tr");
-      trTotal.className = "bg-slate-100 font-bold";
-      trTotal.innerHTML = `
-        <td class="p-1.5 border border-black font-bold">全學年加總</td>
-        <td class="p-1.5 border border-black">${summary.sum100}</td>
-        <td class="p-1.5 border border-black">${summary.sum90}</td>
-        <td class="p-1.5 border border-black">${summary.sum80}</td>
-        <td class="p-1.5 border border-black">${summary.sum70}</td>
-        <td class="p-1.5 border border-black">${summary.sum60}</td>
-        <td class="p-1.5 border border-black text-rose-700">${summary.sumBelow60}</td>
-        <td class="p-1.5 border border-black">${summary.totalCount}</td>
-        <td class="p-1.5 border border-black">${passTotalRate}</td>
-      `;
-      matrixBody.appendChild(trTotal);
-
-      // Render Print Chart Canvas
-      const pCtx = document.getElementById("print-chart-canvas");
-      if (pCtx) {
-        if (printDistributionChart) printDistributionChart.destroy();
-        printDistributionChart = new Chart(pCtx, {
-          type: 'line',
-          data: {
-            labels: ['100分', '90-99分', '80-89分', '70-79分', '60-69分', '<60分'],
-            datasets: [{
-              label: '全學年人數分佈',
-              data: [summary.sum100, summary.sum90, summary.sum80, summary.sum70, summary.sum60, summary.sumBelow60],
-              borderColor: '#000000',
-              backgroundColor: 'rgba(0, 0, 0, 0.05)',
-              borderWidth: 2,
-              fill: true,
-              pointBackgroundColor: '#000000',
-              pointRadius: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
-            }
-          }
-        });
+      // Show modal
+      const modal = document.getElementById("print-modal");
+      if (modal) {
+        modal.classList.remove("hidden");
       }
-
-      const now = new Date();
-      document.getElementById("print-footer-timestamp").textContent = 
-        `報表產生時間：${now.getFullYear() - 1911} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-      document.getElementById("print-modal").classList.remove("hidden");
     }
 
     function switchTab(targetId) {
