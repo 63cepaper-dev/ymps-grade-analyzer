@@ -2,100 +2,138 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>國小學年評量結果分析表系統 (三年級11班預設・雲端即時同步版)</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>國小學年定期評量結果分析表系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap');
     body {
-      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: 'Noto Sans TC', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
     .serif-title {
       font-family: 'Noto Serif TC', serif;
     }
-    
-    /* Touch target comfort */
-    input, button, select, textarea {
-      touch-action: manipulation;
+    /* Hide scrollbars but keep scrolling */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-
-    /* Print Styles: Guaranteed visible on A4 PDF & Paper, never blank */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* A4 Official Print Stylesheet */
     @media print {
-      body {
-        background: white !important;
+      @page {
+        size: A4 portrait;
+        margin: 10mm 12mm 10mm 12mm;
+      }
+      html, body {
+        background: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
-      header, nav, main, #toast, #share-modal, #copy-modal, .no-print {
+      .no-print, header, nav, #cloud-room-banner, #print-modal-header-bar, #copy-modal, #toast {
         display: none !important;
       }
       #print-modal {
-        display: block !important;
         position: static !important;
         inset: auto !important;
         background: transparent !important;
         padding: 0 !important;
         margin: 0 !important;
-        overflow: visible !important;
-        z-index: auto !important;
         width: 100% !important;
+        display: block !important;
         box-shadow: none !important;
-      }
-      #print-modal-scroll-area {
-        padding: 0 !important;
-        margin: 0 !important;
-        background: white !important;
+        filter: none !important;
         overflow: visible !important;
       }
       #print-modal-content {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-height: 0 !important;
-        margin: 0 !important;
-        padding: 0.5cm !important;
         box-shadow: none !important;
+        filter: none !important;
         border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        background: #ffffff !important;
       }
-      #print-modal-content * {
-        visibility: visible !important;
+      .print-page {
+        box-shadow: none !important;
+        filter: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        min-height: 275mm !important;
+        max-height: 277mm !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        background: #ffffff !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
-      @page {
-        size: A4 portrait;
-        margin: 0.8cm;
+      .print-page:last-child {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      /* Prevent table border clipping */
+      table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+      }
+      th, td {
+        border: 1px solid #000000 !important;
       }
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen pb-10">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-12">
 
-  <!-- Mobile-Friendly Non-Sticky Header -->
-  <header class="bg-indigo-700 text-white shadow-sm no-print relative">
-    <div class="max-w-5xl mx-auto px-3 py-1.5 flex items-center justify-between">
-      <div class="flex items-center space-x-1.5">
-        <span class="text-lg">📊</span>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300">
+    <div class="bg-slate-900/95 text-white px-4 py-2.5 rounded-full shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 border border-slate-700">
+      <span id="toast-icon">✅</span>
+      <span id="toast-msg">操作成功</span>
+    </div>
+  </div>
+
+  <!-- Main Top Header -->
+  <header class="bg-indigo-900 text-white shadow-md">
+    <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-indigo-700 flex items-center justify-center text-lg font-bold shadow-inner">
+          📊
+        </div>
         <div>
-          <h1 class="text-xs sm:text-sm font-bold tracking-wide flex items-center gap-1">
-            <span id="header-school-name">國小評量結果分析表</span>
-            <span class="text-[9px] bg-indigo-500 px-1 py-0.5 rounded font-normal">全校通用版</span>
+          <h1 class="text-sm sm:text-base font-bold tracking-wide flex items-center gap-1.5 flex-wrap">
+            <span id="header-school-name">高雄市陽明國小</span>
+            <span class="text-[10px] bg-indigo-700/80 text-indigo-200 px-1.5 py-0.5 rounded font-normal">全校通用版</span>
           </h1>
-          <p class="text-[10px] text-indigo-200" id="top-school-subtitle">高雄市陽明國小 113學年 第一學期 三年級 1~11 班 國語科</p>
+          <p class="text-[11px] text-indigo-200" id="top-school-subtitle">
+            113學年 第一學期 三年級 1~11 班 國語科
+          </p>
         </div>
       </div>
-      <div class="flex items-center gap-1">
-        <button id="btn-quick-config" class="px-2 py-1 bg-indigo-500 hover:bg-indigo-400 text-white text-[11px] sm:text-xs font-semibold rounded shadow-xs transition flex items-center gap-0.5" title="快速修改年級/班級數/科目/表頭">
+      <div class="flex items-center gap-1.5">
+        <button id="btn-quick-config" class="px-2.5 py-1 bg-indigo-800 hover:bg-indigo-700 active:bg-indigo-600 text-indigo-100 rounded text-xs font-semibold transition flex items-center gap-1 border border-indigo-600/60">
           <span>✏️ 修改表頭</span>
         </button>
-        <button id="btn-load-demo" class="px-2 py-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white text-[11px] sm:text-xs font-semibold rounded shadow-xs transition" title="載入示範資料">
-          ⚡ 載入示範數據 (3年級8班)
+        <button id="btn-load-demo" class="px-2 py-1 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-900 rounded text-xs font-bold transition flex items-center gap-1 shadow-xs">
+          <span>⚡ 載入示範數據</span>
         </button>
-        <button id="btn-preview-print" class="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] sm:text-xs font-semibold rounded shadow-xs transition" title="產生A4公文表">
-          🖨️ 產生正式公文表
+        <button id="btn-open-print" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded text-xs font-bold transition flex items-center gap-1 shadow-xs">
+          <span>🖨️ 產生正式公文書</span>
         </button>
       </div>
     </div>
@@ -103,19 +141,19 @@
     <!-- Segmented Navigation Tabs -->
     <nav id="mobile-nav-bar" class="bg-indigo-800/95 border-t border-indigo-600/60 px-2 py-1">
       <div class="max-w-5xl mx-auto flex items-center justify-between gap-1 sm:gap-2">
-        <button class="nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-bold transition flex items-center justify-center gap-1 text-white bg-indigo-600 shadow-xs border border-indigo-400" data-target="tab-input">
+        <button class="nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-bold transition flex items-center justify-center gap-1 text-white bg-indigo-600 shadow-xs border border-indigo-400" data-target="tab-input">
           <span class="text-xs">✍️</span>
           <span>班級填報</span>
         </button>
-        <button class="nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-summary">
+        <button class="nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-summary">
           <span class="text-xs">📈</span>
           <span>學年總表</span>
         </button>
-        <button class="nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-reflection">
+        <button class="nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-reflection">
           <span class="text-xs">💡</span>
           <span>反思修正</span>
         </button>
-        <button class="nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-settings">
+        <button class="nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60" data-target="tab-settings">
           <span class="text-xs">⚙️</span>
           <span>設定/協作</span>
         </button>
@@ -132,7 +170,7 @@
         <span class="text-xl shrink-0" id="cloud-room-status-icon">🟢</span>
         <div>
           <div class="text-xs sm:text-sm font-bold flex items-center gap-1.5 flex-wrap">
-            <span id="cloud-room-title-text">免帳號雲端房間已啟用：</span>
+            <span id="cloud-room-title-text">免帳號雲端房間已連線：</span>
             <span id="display-room-code" class="bg-black/20 px-2 py-0.5 rounded font-mono text-amber-200 text-xs">載入中...</span>
           </div>
           <p class="text-[10px] text-emerald-100 mt-0.5" id="cloud-room-desc-text">
@@ -141,21 +179,13 @@
         </div>
       </div>
       <div class="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
-        <button id="btn-cloud-room-refresh" class="px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold rounded transition flex items-center gap-1">
+        <button id="btn-cloud-room-refresh" class="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 active:bg-white/40 text-white text-[11px] font-semibold rounded transition flex items-center gap-1">
           <span>🔄 刷新雲端最新數據</span>
         </button>
-        <button id="btn-copy-room-link" class="px-2.5 py-1 bg-white text-emerald-800 hover:bg-emerald-50 text-[11px] font-bold rounded shadow-xs transition">
+        <button id="btn-copy-room-link" class="px-3 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 active:bg-emerald-100 text-[11px] font-bold rounded shadow-xs transition">
           📋 複製學年專屬連結
         </button>
       </div>
-    </div>
-
-    <!-- Hidden compatibility bridge for previous element IDs -->
-    <div id="cloud-sync-banner" class="hidden">
-      <span id="cloud-status-text"></span>
-      <span id="cloud-desc-text"></span>
-      <button id="btn-cloud-refresh"></button>
-      <button id="btn-cloud-setup-jump"></button>
     </div>
 
     <!-- Progress Status Bar -->
@@ -198,78 +228,82 @@
         <div class="flex items-center justify-between bg-indigo-50/80 p-2.5 rounded-lg border border-indigo-100">
           <div class="flex items-center gap-1.5">
             <span class="text-sm font-bold text-indigo-900">目前填報班級：</span>
-            <select id="current-class-selector" class="px-2 py-1 border-2 border-indigo-500 rounded bg-white font-bold text-indigo-900 text-sm focus:outline-none">
+            <select id="select-active-class" class="bg-white border border-indigo-300 font-bold text-indigo-900 rounded px-2.5 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
               <!-- Dynamically populated -->
             </select>
           </div>
-          <span id="class-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-200 text-slate-600">未填報</span>
+          <div class="text-xs">
+            <span id="class-fill-status-badge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-200 text-slate-700">
+              未儲存
+            </span>
+          </div>
         </div>
 
-        <!-- Grade Distribution Inputs (Clean Mobile Layout) -->
+        <!-- Grade Range Count Inputs -->
         <div>
           <div class="flex items-center justify-between mb-1.5">
-            <label class="text-xs font-bold text-slate-700">各級距人數輸入 (點選直接輸入數字)：</label>
-            <span class="text-[11px] text-emerald-600 font-medium">純數字小鍵盤</span>
+            <span class="text-xs font-bold text-slate-700">各級距人數輸入（點選直接輸入數字）：</span>
+            <span class="text-[10px] text-slate-500">純數字小鍵盤</span>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            <!-- 100 分 -->
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-indigo-800">100 分 (滿分)</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-100">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-100" class="score-input flex-1 w-full mx-1 py-1.5 border border-slate-300 rounded bg-white text-base font-bold text-center focus:ring-2 focus:ring-indigo-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-100">+</button>
+            <!-- 100 -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label class="block text-xs font-bold text-indigo-900 mb-1">100 分 (滿分)</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c100" data-step="-1">-</button>
+                <input type="number" id="input-c100" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c100" data-step="1">+</button>
               </div>
             </div>
 
-            <!-- 90~99 分 -->
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-blue-800">90 ～ 99 分</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-90">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-90" class="score-input flex-1 w-full mx-1 py-1.5 border border-slate-300 rounded bg-white text-base font-bold text-center focus:ring-2 focus:ring-blue-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-90">+</button>
+            <!-- 90~99 -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label class="block text-xs font-bold text-blue-900 mb-1">90 ～ 99 分</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c90" data-step="-1">-</button>
+                <input type="number" id="input-c90" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c90" data-step="1">+</button>
               </div>
             </div>
 
-            <!-- 80~89 分 -->
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-teal-800">80 ～ 89 分</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-80">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-80" class="score-input flex-1 w-full mx-1 py-1.5 border border-slate-300 rounded bg-white text-base font-bold text-center focus:ring-2 focus:ring-teal-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-80">+</button>
+            <!-- 80~89 -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label class="block text-xs font-bold text-cyan-900 mb-1">80 ～ 89 分</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c80" data-step="-1">-</button>
+                <input type="number" id="input-c80" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c80" data-step="1">+</button>
               </div>
             </div>
 
-            <!-- 70~79 分 -->
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-amber-800">70 ～ 79 分</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-70">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-70" class="score-input flex-1 w-full mx-1 py-1.5 border border-slate-300 rounded bg-white text-base font-bold text-center focus:ring-2 focus:ring-amber-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-70">+</button>
+            <!-- 70~79 -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label class="block text-xs font-bold text-amber-900 mb-1">70 ～ 79 分</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c70" data-step="-1">-</button>
+                <input type="number" id="input-c70" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c70" data-step="1">+</button>
               </div>
             </div>
 
-            <!-- 60~69 分 -->
-            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-orange-800">60 ～ 69 分</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-60">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-60" class="score-input flex-1 w-full mx-1 py-1.5 border border-slate-300 rounded bg-white text-base font-bold text-center focus:ring-2 focus:ring-orange-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100 text-sm" data-target="input-score-60">+</button>
+            <!-- 60~69 -->
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+              <label class="block text-xs font-bold text-orange-900 mb-1">60 ～ 69 分</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c60" data-step="-1">-</button>
+                <input type="number" id="input-c60" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-slate-300 rounded font-bold text-slate-600 hover:bg-slate-100" data-target="input-c60" data-step="1">+</button>
               </div>
             </div>
 
-            <!-- 60 分以下 -->
-            <div class="bg-rose-50/70 p-2 rounded-lg border border-rose-200 flex flex-col justify-between">
-              <span class="text-xs font-bold text-rose-800">60 分以下 (不及格)</span>
-              <div class="flex items-center mt-1">
-                <button type="button" class="btn-step-minus w-8 h-8 rounded bg-white border border-rose-300 font-bold text-rose-700 hover:bg-rose-100 text-sm" data-target="input-score-below60">-</button>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" id="input-score-below60" class="score-input flex-1 w-full mx-1 py-1.5 border border-rose-300 rounded bg-white text-base font-bold text-center text-rose-700 focus:ring-2 focus:ring-rose-500 focus:outline-none" value="0">
-                <button type="button" class="btn-step-plus w-8 h-8 rounded bg-white border border-rose-300 font-bold text-rose-700 hover:bg-rose-100 text-sm" data-target="input-score-below60">+</button>
+            <!-- <60 -->
+            <div class="bg-rose-50/70 p-2.5 rounded-lg border border-rose-200">
+              <label class="block text-xs font-bold text-rose-900 mb-1">60 分以下 (待加強)</label>
+              <div class="flex items-center gap-1">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-rose-300 rounded font-bold text-rose-700 hover:bg-rose-100" data-target="input-cBelow60" data-step="-1">-</button>
+                <input type="number" id="input-cBelow60" min="0" value="0" class="score-input flex-1 h-8 text-center font-bold text-sm bg-white border border-rose-300 text-rose-700 rounded focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                <button type="button" class="btn-step w-7 h-8 bg-white border border-rose-300 rounded font-bold text-rose-700 hover:bg-rose-100" data-target="input-cBelow60" data-step="1">+</button>
               </div>
             </div>
           </div>
@@ -277,171 +311,126 @@
 
         <!-- Class Note -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">本班教學觀察 / 特殊生註記 (選填)：</label>
-          <input type="text" id="input-class-note" placeholder="例如：第4題字詞辨析失分較多、有1位資源班抽離施測" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <label class="block text-xs font-bold text-slate-700 mb-1">本班質性教學觀察 / 補強備註（選填）：</label>
+          <input type="text" id="input-class-note" placeholder="例如：學生普遍在閱讀測驗失分、字形題表現良好..." class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
         </div>
 
-        <!-- Class Quick Stats -->
-        <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div>
-            <span class="text-slate-500">實測總人數：</span>
-            <strong id="stat-class-total" class="text-indigo-700 font-bold">0 人</strong>
-          </div>
-          <div>
-            <span class="text-slate-500">90分以上：</span>
-            <strong id="stat-class-high" class="text-blue-700 font-bold">0 人 (0%)</strong>
-          </div>
-          <div>
-            <span class="text-slate-500">及格人數：</span>
-            <strong id="stat-class-pass" class="text-emerald-700 font-bold">0 人 (0%)</strong>
-          </div>
-          <div>
-            <span class="text-slate-500">60分以下：</span>
-            <strong id="stat-class-remedial" class="text-rose-600 font-bold">0 人 (0%)</strong>
-          </div>
+        <!-- Class Total Summary Bar -->
+        <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-xs">
+          <span class="text-slate-600">本班目前填報總人數：</span>
+          <span class="font-bold text-sm text-indigo-900"><span id="active-class-total">0</span> 人</span>
         </div>
 
-        <!-- Actions: Large touch-friendly buttons -->
-        <div class="pt-1 flex flex-col sm:flex-row gap-2">
-          <button id="btn-save-class" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
-            <span>💾 儲存並更新本班成績</span>
+        <!-- Action Buttons -->
+        <div class="flex gap-2 pt-1">
+          <button id="btn-save-class" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm rounded-lg shadow-md transition flex items-center justify-center gap-1.5">
+            <span>💾 儲存本班數據並同步全學年</span>
           </button>
-          <div class="flex gap-2">
-            <button id="btn-copy-class-code" class="flex-1 py-2.5 px-3 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 text-xs font-bold rounded-lg transition" title="複製此班代碼分享給召集人">
-              📋 複製單班代碼
-            </button>
-            <button id="btn-clear-class" class="py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold rounded-lg transition">
-              清空此班數據
-            </button>
-          </div>
+          <button id="btn-clear-class" class="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 font-semibold text-xs rounded-lg transition">
+            清空重填
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TAB 2: 學年總表 (即時加總與對照) ==================== -->
+    <!-- ==================== TAB 2: 學年總表 ==================== -->
     <section id="tab-summary" class="tab-pane hidden space-y-4">
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-4">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div>
-            <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5">
-              <span>📈</span> ◆ 學年學生成績分布 (即時自動加總)
-            </h3>
-            <p class="text-[11px] text-slate-500">各班填報隨時累計，百分比四捨五入至小數第一位，總和 100%</p>
-          </div>
-          <button id="btn-toggle-view" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md transition">
-            切換「各班橫向細節對照表」
-          </button>
+      <!-- 4 Quick Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 text-center">
+          <div class="text-[11px] text-slate-500 font-medium">全學年應考總人數</div>
+          <div class="text-xl font-black text-indigo-900 mt-0.5"><span id="metric-total-students">0</span> <span class="text-xs font-normal">人</span></div>
         </div>
+        <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 text-center">
+          <div class="text-[11px] text-slate-500 font-medium">及格率 (≥60分)</div>
+          <div class="text-xl font-black text-emerald-600 mt-0.5"><span id="metric-pass-rate">0.0</span>%</div>
+        </div>
+        <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 text-center">
+          <div class="text-[11px] text-slate-500 font-medium">精熟群 (≥80分)</div>
+          <div class="text-xl font-black text-blue-600 mt-0.5"><span id="metric-master-rate">0.0</span>%</div>
+        </div>
+        <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 text-center">
+          <div class="text-[11px] text-slate-500 font-medium">待加強 (<60分)</div>
+          <div class="text-xl font-black text-rose-600 mt-0.5"><span id="metric-fail-count">0</span> <span class="text-xs font-normal">人</span></div>
+        </div>
+      </div>
 
-        <!-- Aggregated Result Table -->
+      <!-- Chart Container -->
+      <div class="bg-white p-3 sm:p-4 rounded-xl shadow-xs border border-slate-200">
+        <h3 class="text-xs sm:text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
+          <span>📊 全學年成績常態分佈折線圖</span>
+          <span class="text-[11px] text-slate-500 font-normal">即時統計</span>
+        </h3>
+        <div class="h-56 sm:h-64 w-full">
+          <canvas id="grade-distribution-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Summary Distribution Table -->
+      <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+        <div class="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800">📋 全學年成績級距分佈統計表</h3>
+          <span class="text-[11px] text-indigo-600 font-semibold">符合陽明國小正式表格格式</span>
+        </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-center border-collapse border border-slate-300 text-xs sm:text-sm">
-            <thead>
-              <tr class="bg-slate-100 text-slate-700 font-bold">
-                <th class="border border-slate-300 py-2 px-2">分 數</th>
-                <th class="border border-slate-300 py-2 px-2">人 數</th>
-                <th class="border border-slate-300 py-2 px-2">比 例</th>
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2.5 text-center">級距 (分數)</th>
+                <th class="p-2.5 text-center">全學年人數</th>
+                <th class="p-2.5 text-center">百分比</th>
+                <th class="p-2.5">常態分佈評析</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-200 text-slate-800">
-              <tr>
-                <td class="border border-slate-300 py-1.5 font-medium">100 分</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-indigo-700"><span id="sum-count-100">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-slate-600"><span id="sum-ratio-100">0.0</span> %</td>
-              </tr>
-              <tr>
-                <td class="border border-slate-300 py-1.5 font-medium">90～99 分</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-blue-700"><span id="sum-count-90">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-slate-600"><span id="sum-ratio-90">0.0</span> %</td>
-              </tr>
-              <tr>
-                <td class="border border-slate-300 py-1.5 font-medium">80～89 分</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-teal-700"><span id="sum-count-80">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-slate-600"><span id="sum-ratio-80">0.0</span> %</td>
-              </tr>
-              <tr>
-                <td class="border border-slate-300 py-1.5 font-medium">70～79 分</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-amber-700"><span id="sum-count-70">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-slate-600"><span id="sum-ratio-70">0.0</span> %</td>
-              </tr>
-              <tr>
-                <td class="border border-slate-300 py-1.5 font-medium">60～69 分</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-orange-700"><span id="sum-count-60">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-slate-600"><span id="sum-ratio-60">0.0</span> %</td>
-              </tr>
-              <tr class="bg-rose-50/50">
-                <td class="border border-slate-300 py-1.5 font-medium text-rose-700">60 分以下</td>
-                <td class="border border-slate-300 py-1.5 font-bold text-rose-700"><span id="sum-count-below60">0</span> 人</td>
-                <td class="border border-slate-300 py-1.5 text-rose-600 font-semibold"><span id="sum-ratio-below60">0.0</span> %</td>
-              </tr>
-              <tr class="bg-indigo-50/60 font-bold text-slate-900">
-                <td class="border border-slate-300 py-2">總 人 數</td>
-                <td class="border border-slate-300 py-2 text-indigo-900 text-sm sm:text-base"><span id="sum-count-total">0</span> 人</td>
-                <td class="border border-slate-300 py-2 text-indigo-900">100.0 %</td>
-              </tr>
+            <tbody id="summary-table-body" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
             </tbody>
           </table>
         </div>
+      </div>
 
-        <!-- Chart Container -->
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-          <div class="text-xs font-bold text-slate-600 mb-2">學年各級距成績分佈圖表</div>
-          <div class="relative h-56 w-full">
-            <canvas id="gradeDistributionChart"></canvas>
-          </div>
+      <!-- Class-by-Class Breakdown Table -->
+      <div class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
+        <div class="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-xs sm:text-sm font-bold text-slate-800">🏫 各班級距人數明細對照表</h3>
+          <span class="text-[11px] text-slate-500">已填報各班明細</span>
         </div>
-
-        <!-- Breakdown Matrix -->
-        <div id="breakdown-container">
-          <h4 class="font-bold text-slate-700 text-xs sm:text-sm mb-2">全學年各班數據明細（橫向對照）</h4>
-          <div class="overflow-x-auto">
-            <table class="w-full text-center border-collapse border border-slate-200 text-[11px] sm:text-xs">
-              <thead class="bg-slate-100 text-slate-600 font-bold">
-                <tr>
-                  <th class="border border-slate-200 p-1.5">班級</th>
-                  <th class="border border-slate-200 p-1.5">狀態</th>
-                  <th class="border border-slate-200 p-1.5">100</th>
-                  <th class="border border-slate-200 p-1.5">90~99</th>
-                  <th class="border border-slate-200 p-1.5">80~89</th>
-                  <th class="border border-slate-200 p-1.5">70~79</th>
-                  <th class="border border-slate-200 p-1.5">60~69</th>
-                  <th class="border border-slate-200 p-1.5 text-rose-600">&lt;60</th>
-                  <th class="border border-slate-200 p-1.5 font-bold">總人數</th>
-                  <th class="border border-slate-200 p-1.5">及格率</th>
-                  <th class="border border-slate-200 p-1.5 text-left">備註</th>
-                </tr>
-              </thead>
-              <tbody id="breakdown-tbody" class="divide-y divide-slate-100">
-                <!-- Injected dynamically -->
-              </tbody>
-            </table>
-          </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-[11px] text-center">
+            <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+              <tr>
+                <th class="p-2">班級</th>
+                <th class="p-2">100分</th>
+                <th class="p-2">90-99</th>
+                <th class="p-2">80-89</th>
+                <th class="p-2">70-79</th>
+                <th class="p-2">60-69</th>
+                <th class="p-2 text-rose-600"><60</th>
+                <th class="p-2">總計</th>
+                <th class="p-2 text-left">教學備註</th>
+              </tr>
+            </thead>
+            <tbody id="class-breakdown-table-body" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TAB 3: 反思修正 (智慧診斷與編輯) ==================== -->
-    <section id="tab-reflection" class="tab-pane hidden space-y-3">
+    <!-- ==================== TAB 3: 反思修正 ==================== -->
+    <section id="tab-reflection" class="tab-pane hidden space-y-4">
       <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-100 gap-2">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
           <div>
             <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5">
-              <span>💡</span> ◆ 反思修正 (專業診斷建議)
+              <span>💡</span> 評量結果反思修正與教學策略
             </h3>
-            <p class="text-[11px] text-slate-500">依據各班加總成效，自動生成具備教育專業度之教學檢討與命題修正</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">系統已根據全學年數據自動計算並生成專業檢討分析，可直接點擊修改</p>
           </div>
-          <div class="flex items-center gap-2">
-            <select id="select-reflection-scenario" class="text-xs px-2 py-1.5 border border-slate-300 rounded bg-slate-50 text-slate-700">
-              <option value="auto">🤖 依數據智慧判定</option>
-              <option value="normal">📈 標準常態分佈</option>
-              <option value="high">🏆 高分群集中</option>
-              <option value="bimodal">⚡ 雙峰M型化分佈</option>
-              <option value="hard">⚠️ 及格率偏低</option>
-            </select>
-            <button id="btn-generate-reflection" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold rounded shadow-xs transition">
-              ✨ 重新自動生成反思
-            </button>
-          </div>
+          <button id="btn-regenerate-reflection" class="px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded text-xs font-semibold border border-indigo-200 transition">
+            🔄 依最新數據重整
+          </button>
         </div>
 
         <!-- Reflection Editor -->
@@ -452,7 +441,7 @@
               複製文字
             </button>
           </div>
-          <textarea id="textarea-reflection" rows="10" class="w-full p-3 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none leading-relaxed font-mono shadow-inner"></textarea>
+          <textarea id="textarea-reflection" rows="12" class="w-full p-3 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none leading-relaxed font-mono shadow-inner"></textarea>
         </div>
 
         <button id="btn-insert-sample" class="text-xs text-indigo-600 hover:underline">
@@ -494,31 +483,7 @@
         </div>
       </div>
 
-      <!-- Hidden compatibility inputs for previous element IDs -->
-      <div class="hidden">
-        <input type="url" id="input-cloud-api-url">
-        <button id="btn-save-cloud-url"></button>
-        <button id="btn-copy-gas-script"></button>
-        <button id="btn-clear-cloud-url"></button>
-      </div>
-
-      <!-- LINE Force External Browser Banner -->
-      <div class="bg-slate-800 text-white rounded-xl shadow-xs p-3.5 space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5 font-bold text-xs sm:text-sm">
-            <span>💬</span> LINE 強迫調用外部瀏覽器開啟 (黃金指令)
-          </div>
-          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">避免被LINE擋住</span>
-        </div>
-        <p class="text-[11px] text-slate-300 leading-relaxed">
-          剛才複製的專屬連結已自動包含 <strong>?openExternalBrowser=1</strong>，老師在 LINE 點選時就會直接喚起手機原生 Chrome / Safari，徹底擺脫 LINE 內建視窗！
-        </p>
-        <button id="btn-copy-line-url" class="w-full py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-md shadow-xs transition flex items-center justify-center gap-1.5">
-          <span>📋 複製「LINE 強制外開瀏覽器」網址語法</span>
-        </button>
-      </div>
-
-            <!-- Generate Clean Room for Other Grades Card -->
+      <!-- Generate Clean Room for Other Grades Card -->
       <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2 font-bold text-sm sm:text-base text-indigo-950">
@@ -652,7 +617,7 @@
               <div class="flex gap-1">
                 <input type="text" id="info-exam-period" value="一" placeholder="一 / 二 / 期中" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
                 <select id="quick-period-select" class="px-1.5 py-1 border border-slate-300 rounded text-xs bg-slate-50 text-slate-600 shrink-0" title="常用期別選單">
-                  <option value="">快速期別</option>
+                  <option value="">快速選擇</option>
                   <option value="一">第一次定期評量</option>
                   <option value="二">第二次定期評量</option>
                   <option value="期中">期中評量</option>
@@ -664,314 +629,249 @@
 
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-slate-600 font-medium mb-1">命題教師</label>
-              <input type="text" id="info-teacher" value="陳美玲 老師" placeholder="填寫命題教師姓名" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
+              <label class="block text-slate-600 font-medium mb-1">命題教師姓名</label>
+              <input type="text" id="info-teacher" value="陳美玲 老師" placeholder="例如：陳美玲 老師" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
             </div>
             <div>
-              <label class="block text-slate-600 font-medium mb-1">版本</label>
+              <label class="block text-slate-600 font-medium mb-1">教科書版本</label>
               <div class="flex gap-1">
-                <input type="text" id="info-version" value="南一版" placeholder="南一/康軒/翰林..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
+                <input type="text" id="info-version" value="南一版" placeholder="康軒/翰林/南一..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
                 <select id="quick-version-select" class="px-1.5 py-1 border border-slate-300 rounded text-xs bg-slate-50 text-slate-600 shrink-0">
-                  <option value="">選版本</option>
+                  <option value="">常用版本</option>
                   <option value="南一版">南一版</option>
                   <option value="康軒版">康軒版</option>
                   <option value="翰林版">翰林版</option>
-                  <option value="真平版">真平版</option>
-                  <option value="自編版">自編版</option>
+                  <option value="自編教材">自編教材</option>
                 </select>
               </div>
             </div>
           </div>
 
           <div>
-            <label class="block text-slate-600 font-medium mb-1">使用年級班別（公文表頭印製）</label>
-            <input type="text" id="info-grade-label" value="三年級 1~11 班" placeholder="例如：三年級 1~11 班..." class="w-full px-3 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
+            <label class="block text-slate-600 font-medium mb-1">使用年級班別標題文字</label>
+            <input type="text" id="info-grade-label" value="三年級 1~11 班" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:outline-none text-xs sm:text-sm">
           </div>
         </div>
-      </div>
-
-      <!-- Section B: Advanced Total Classes Configuration -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-3">
-        <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center justify-between pb-2 border-b border-slate-100">
-          <span>🏫 自訂班級代號名冊</span>
-          <span class="text-xs text-indigo-600 font-normal">可隨時自由更名</span>
-        </h3>
-
-        <div class="space-y-2 text-xs sm:text-sm">
-          <p class="text-slate-500 text-xs">
-            系統目前已為陽明國小三年級預設好 11 個班級（301~311）。若需要調整，可在下方直接變更並按套用：
-          </p>
-
-          <div class="flex items-center gap-2">
-            <select id="select-total-classes" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm">
-              <option value="11" selected>11 個班 (當前年級 01~11 - 陽明預設)</option>
-              <option value="8">8 個班 (當前年級 01~08)</option>
-              <option value="4">4 個班 (當前年級 01~04)</option>
-              <option value="6">6 個班 (當前年級 01~06)</option>
-              <option value="10">10 個班 (當前年級 01~10)</option>
-              <option value="12">12 個班 (當前年級 01~12)</option>
-              <option value="custom">自訂班級清單...</option>
-            </select>
-            <button id="btn-apply-classes" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs rounded-md shrink-0">
-              套用
-            </button>
-          </div>
-
-          <div id="custom-classes-box" class="hidden">
-            <input type="text" id="input-custom-classes" placeholder="用逗號隔開，例如：301, 302, 303 或 三年一班, 三年二班" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs">
-          </div>
-        </div>
-      </div>
-
-      <!-- Section C: LINE Multi-Teacher Collaboration (Manual Fallback) -->
-      <div class="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-          <h3 class="font-bold text-slate-800 text-sm sm:text-base flex items-center gap-1.5">
-            <span>📤</span> 班級代碼手動匯入與備份 (手動備援方案)
-          </h3>
-          <button id="btn-share-code" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs rounded transition">
-            📤 班級匯入/匯出代碼
-          </button>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <p class="text-slate-600 leading-relaxed">
-            若處於無網路離線狀態，老師可按「複製單班代碼」傳到 LINE 群，召集人貼在下方點擊「匯入」進行手動合併：
-          </p>
-          <textarea id="import-code-area" rows="3" placeholder="貼上老師在 LINE 群傳來的代碼 (例如：[GRADE_DATA]:eyJjbGFzcyI6IjMwMSI...)" class="w-full p-2 border border-slate-300 rounded-md font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-          <div class="flex gap-2">
-            <button id="btn-do-import" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md transition">
-              📥 解析並匯入此班成績
-            </button>
-            <button id="btn-copy-all-export" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-md transition">
-              📋 備份全學年 JSON
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section D: Print & Reset -->
-      <div class="flex flex-col sm:flex-row gap-2 pt-1">
-        <button id="btn-settings-preview-print" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-lg shadow-xs transition flex items-center justify-center gap-1.5">
-          <span>🖨️ 產生正式公文表</span>
-        </button>
-        <button id="btn-reset-all" class="py-2.5 px-4 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold rounded-lg transition">
-          重設
-        </button>
       </div>
     </section>
+
   </main>
 
-  <!-- Modal: Print / Official Form Preview (Guaranteed visible on PDF / Print) -->
-  <div id="print-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden">
-      <!-- Modal Bar (Hidden on print) -->
-      <div class="px-4 py-3 bg-slate-800 text-white flex items-center justify-between shrink-0 no-print">
-        <div class="flex items-center gap-2">
-          <span>🖨️</span>
-          <h3 class="font-bold text-sm">評量結果分析表 正式公文列印預覽 (A4)</h3>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-trigger-print" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded shadow transition">
-            列印 / 另存為 PDF
-          </button>
-          <button id="btn-close-modal" class="p-1 hover:bg-slate-700 rounded text-slate-300 hover:text-white transition">
-            ✕
-          </button>
-        </div>
+  <!-- ==================== A4 OFFICIAL PRINT / PDF MODAL ==================== -->
+  <div id="print-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex flex-col items-center justify-start overflow-y-auto p-2 sm:p-6 no-print">
+    
+    <!-- Top Floating Toolbar -->
+    <div id="print-modal-header-bar" class="w-full max-w-[210mm] bg-slate-900 text-white rounded-t-xl px-4 py-2.5 flex items-center justify-between no-print sticky top-0 shadow-lg z-10">
+      <div class="flex items-center gap-2">
+        <span class="text-emerald-400 font-bold">📄 正式公文分析表預覽 (A4 標準版面)</span>
       </div>
-
-      <!-- Scrollable Preview Area -->
-      <div id="print-modal-scroll-area" class="p-3 sm:p-6 overflow-y-auto bg-slate-100 flex-1">
-        <!-- Target Official Paper Layout -->
-        <div id="print-modal-content" class="bg-white mx-auto p-6 sm:p-10 shadow-md border border-slate-300 text-black max-w-[210mm] min-h-[297mm] flex flex-col justify-between text-[13px] leading-relaxed">
-          <div>
-            <!-- Header Title -->
-            <div class="text-center font-bold text-base sm:text-lg tracking-wider mb-5 serif-title border-b-2 border-black pb-2">
-              <span id="p-school">高雄市陽明國小</span>
-              <span id="p-year" class="underline underline-offset-4 mx-1">113</span>學年度 
-              第<span id="p-semester" class="underline underline-offset-4 mx-1">一</span>學期 
-              <span id="p-subject" class="underline underline-offset-4 mx-1">國語</span>科目 
-              期<span id="p-exam-period" class="underline underline-offset-4 mx-1">一</span>評量 
-              評量結果分析表
-            </div>
-
-            <!-- Block 1: Exam Info Table (4-cells) -->
-            <div class="mb-4">
-              <div class="font-bold mb-1 flex items-center text-[12px]">
-                <span>◆ 試題名稱、版本、適用年級及命題教師：</span>
-              </div>
-              <table class="w-full border-collapse border border-black text-center text-[12px]">
-                <tr>
-                  <td class="border border-black py-2 px-2 font-semibold bg-slate-50 w-24">科目名稱</td>
-                  <td id="p-info-subject" class="border border-black py-2 px-2 text-left">國語</td>
-                  <td class="border border-black py-2 px-2 font-semibold bg-slate-50 w-28">使用年級班別</td>
-                  <td id="p-info-grade-label" class="border border-black py-2 px-2 text-left">三年級 1~11 班</td>
-                </tr>
-                <tr>
-                  <td class="border border-black py-2 px-2 font-semibold bg-slate-50">命題教師</td>
-                  <td id="p-info-teacher" class="border border-black py-2 px-2 text-left">陳美玲 老師</td>
-                  <td class="border border-black py-2 px-2 font-semibold bg-slate-50">版本</td>
-                  <td id="p-info-version" class="border border-black py-2 px-2 text-left">南一版</td>
-                </tr>
-              </table>
-            </div>
-
-            <!-- Block 2: Grade Distribution Table -->
-            <div class="mb-4">
-              <div class="font-bold mb-1 flex items-center text-[12px]">
-                <span>◆ 學年學生成績分布：</span>
-              </div>
-              <table class="w-full border-collapse border border-black text-center text-[12px]">
-                <thead>
-                  <tr class="bg-slate-50 font-bold">
-                    <th class="border border-black py-1.5 px-3 w-1/3">分 數</th>
-                    <th class="border border-black py-1.5 px-3 w-1/3">人 數</th>
-                    <th class="border border-black py-1.5 px-3 w-1/3">比 例</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="border border-black py-1">100 分</td>
-                    <td class="border border-black py-1"><span id="p-count-100">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-100">0.0</span> %</td>
-                  </tr>
-                  <tr>
-                    <td class="border border-black py-1">90～99 分</td>
-                    <td class="border border-black py-1"><span id="p-count-90">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-90">0.0</span> %</td>
-                  </tr>
-                  <tr>
-                    <td class="border border-black py-1">80～89 分</td>
-                    <td class="border border-black py-1"><span id="p-count-80">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-80">0.0</span> %</td>
-                  </tr>
-                  <tr>
-                    <td class="border border-black py-1">70～79 分</td>
-                    <td class="border border-black py-1"><span id="p-count-70">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-70">0.0</span> %</td>
-                  </tr>
-                  <tr>
-                    <td class="border border-black py-1">60～69 分</td>
-                    <td class="border border-black py-1"><span id="p-count-60">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-60">0.0</span> %</td>
-                  </tr>
-                  <tr>
-                    <td class="border border-black py-1">60 分以下</td>
-                    <td class="border border-black py-1"><span id="p-count-below60">0</span> 人</td>
-                    <td class="border border-black py-1"><span id="p-ratio-below60">0.0</span> %</td>
-                  </tr>
-                  <tr class="font-bold">
-                    <td class="border border-black py-1.5">總 人 數</td>
-                    <td class="border border-black py-1.5"><span id="p-count-total">0</span> 人</td>
-                    <td class="border border-black py-1.5">100.0 %</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Block 3: Reflection & Remediation -->
-            <div class="mb-5">
-              <div class="font-bold mb-1 flex items-center text-[12px]">
-                <span>◆ 反思修正：</span>
-              </div>
-              <div id="p-reflection-lines" class="text-[12px] text-slate-900 border border-black p-3 min-h-[160px] whitespace-pre-wrap leading-relaxed">
-                <!-- Reflection content injected here -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Block 4: Signature Area -->
-          <div class="pt-4 border-t border-dashed border-slate-300">
-            <div class="mb-8 text-[12px]">
-              <span class="font-bold">學年教師簽章：</span>
-              <span id="p-teacher-signatures" class="text-slate-500 text-[11px] ml-1">（301~311 各班級任導師會簽）</span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-4 text-center text-[12px] font-bold">
-              <div>教學組長：_________________</div>
-              <div>教務主任：_________________</div>
-              <div>校　　長：_________________</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Share / Import Single Class Code -->
-  <div id="share-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full p-4 space-y-3">
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 class="font-bold text-slate-800 text-sm">跨班級非同步協作代碼 (LINE/免伺服器)</h3>
-        <button id="btn-close-share" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
-      </div>
-      <p class="text-slate-600 text-xs leading-relaxed">
-        各班老師在自己手機輸入完後複製代碼傳到 LINE 群，召集人貼在下方即可一鍵整合！
-      </p>
-      <textarea id="modal-import-code-area" rows="3" placeholder="貼上老師代碼..." class="w-full p-2 border border-slate-300 rounded font-mono text-xs"></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="btn-modal-do-import" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded">
-          匯入整合
+      <div class="flex items-center gap-2">
+        <button id="btn-trigger-print" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm transition flex items-center gap-1.5">
+          <span>🖨️ 立即列印 / 另存為 PDF</span>
+        </button>
+        <button id="btn-close-print" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-lg transition">
+          ✕ 關閉
         </button>
       </div>
     </div>
+
+    <!-- Printable A4 Container: Zero Shadows in Print -->
+    <div id="print-modal-content" class="w-full max-w-[210mm] bg-white text-black p-6 sm:p-8 space-y-6 shadow-2xl rounded-b-xl border border-slate-200">
+
+      <!-- ==================== PAGE 1: 評量結果分析表 ==================== -->
+      <div class="print-page">
+        <!-- Top Section -->
+        <div>
+          <!-- Title -->
+          <div class="text-center pb-2 mb-3 border-b-2 border-black">
+            <h2 class="serif-title text-xl sm:text-2xl font-black tracking-widest text-black" id="print-school-title">
+              高雄市陽明國小 113 學年度 第一學期 國語 科目 期中 評量 評量結果分析表
+            </h2>
+          </div>
+
+          <!-- Section 1: Basic Info Table -->
+          <div class="mb-3.5">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <span>◆</span> 試題名稱、版本、適用年級及命題教師：
+            </div>
+            <table class="w-full text-xs border border-black border-collapse text-center">
+              <tbody>
+                <tr>
+                  <td class="font-bold bg-slate-100 p-2 w-1/4 border border-black">科目名稱</td>
+                  <td class="p-2 w-1/4 border border-black font-medium" id="print-table-subject">國語</td>
+                  <td class="font-bold bg-slate-100 p-2 w-1/4 border border-black">使用年級班別</td>
+                  <td class="p-2 w-1/4 border border-black font-medium" id="print-table-grade">三年級 1~11 班</td>
+                </tr>
+                <tr>
+                  <td class="font-bold bg-slate-100 p-2 border border-black">命題教師</td>
+                  <td class="p-2 border border-black font-medium" id="print-table-teacher">陳美玲 老師</td>
+                  <td class="font-bold bg-slate-100 p-2 border border-black">版　　本</td>
+                  <td class="p-2 border border-black font-medium" id="print-table-version">南一版</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 2: Grade Distribution Table -->
+          <div class="mb-3.5">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <span>◆</span> 學年學生成績分布：
+            </div>
+            <table class="w-full text-xs border border-black border-collapse text-center">
+              <thead class="bg-slate-100 font-bold border-b border-black">
+                <tr>
+                  <th class="p-2 border border-black w-1/3">分　　數</th>
+                  <th class="p-2 border border-black w-1/3">人　　數</th>
+                  <th class="p-2 border border-black w-1/3">比　　例</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-black font-medium" id="print-distribution-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Section 3: Pedagogical Reflection Box -->
+          <div class="mb-4">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <span>◆</span> 反思修正：
+            </div>
+            <div id="print-reflection-content" class="border border-black p-3.5 text-xs sm:text-[13px] leading-relaxed whitespace-pre-line font-serif min-h-[170px] bg-white">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Section: Teacher Signature Grid + Admin Stamp -->
+        <div class="pt-2">
+          <!-- 兩排學年教師簽章專區 (平均分配、預留充足簽章格) -->
+          <div class="mb-3">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <span>◆</span> 學年教師簽章：
+              </div>
+              <span class="text-[10px] text-slate-600 font-normal">（請各班導師於所屬方格內會簽蓋章）</span>
+            </div>
+            <div id="print-teacher-grid-container" class="border-t border-l border-black">
+              <!-- Injected dynamically into 2 equal balanced rows -->
+            </div>
+          </div>
+
+          <!-- 行政主管核章區 -->
+          <div class="flex items-center justify-between pt-2 px-3 text-xs font-bold text-slate-900">
+            <div class="flex items-center gap-1">
+              <span>教學組長：</span>
+              <span class="inline-block w-28 sm:w-36 border-b border-black"></span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span>教務主任：</span>
+              <span class="inline-block w-28 sm:w-36 border-b border-black"></span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span>校　　長：</span>
+              <span class="inline-block w-28 sm:w-36 border-b border-black"></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== PAGE 2: 全學年各班明細與統計圖表 ==================== -->
+      <div class="print-page pt-4">
+        <div>
+          <div class="text-center pb-2 mb-3 border-b-2 border-black">
+            <h2 class="serif-title text-lg sm:text-xl font-black tracking-wider text-black" id="print-page2-title">
+              高雄市陽明國小 113 學年度 第一學期 全學年各班評量統計明細表
+            </h2>
+          </div>
+
+          <!-- All Classes Matrix -->
+          <div class="mb-4">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <span>◆</span> 各班成績級距統計人數明細：
+            </div>
+            <table class="w-full text-[11px] border border-black border-collapse text-center">
+              <thead class="bg-slate-100 font-bold border-b border-black">
+                <tr>
+                  <th class="p-1.5 border border-black">班級</th>
+                  <th class="p-1.5 border border-black">100分</th>
+                  <th class="p-1.5 border border-black">90~99</th>
+                  <th class="p-1.5 border border-black">80~89</th>
+                  <th class="p-1.5 border border-black">70~79</th>
+                  <th class="p-1.5 border border-black">60~69</th>
+                  <th class="p-1.5 border border-black text-rose-700">&lt;60</th>
+                  <th class="p-1.5 border border-black">實測人數</th>
+                  <th class="p-1.5 border border-black">及格率</th>
+                </tr>
+              </thead>
+              <tbody id="print-matrix-body" class="divide-y divide-black font-medium">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Printed Bell Curve Chart Canvas -->
+          <div class="mb-4">
+            <div class="text-xs font-bold text-slate-900 mb-1 flex items-center gap-1">
+              <span>◆</span> 全學年常態分佈折線圖：
+            </div>
+            <div class="border border-black p-3 bg-white h-64 flex items-center justify-center">
+              <canvas id="print-chart-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-300 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+          <span>說明：本評量結果分析表依據教育部學生學習評量相關準則填報備查。</span>
+          <span id="print-footer-timestamp"></span>
+        </div>
+      </div>
+
+    </div>
   </div>
 
-  <!-- In-page Copy Fallback Modal (Canvas Safe) -->
+  <!-- In-page Copy Fallback Modal -->
   <div id="copy-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-4 space-y-3">
       <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 id="copy-modal-title" class="font-bold text-slate-800 text-sm">請複製以下內容</h3>
+        <h3 id="copy-modal-title" class="font-bold text-slate-800 text-sm">請手動複製以下網址</h3>
         <button id="btn-close-copy-modal" class="text-slate-400 hover:text-slate-600 text-sm">✕</button>
       </div>
-      <textarea id="copy-modal-text" rows="8" class="w-full p-2 border border-slate-300 rounded-md font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none" readonly></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="btn-select-copy-modal" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md">
-          全選反白文字
+      <textarea id="copy-modal-text" rows="5" class="w-full p-2 border border-slate-300 rounded-md font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+      <div class="text-right">
+        <button id="btn-confirm-copy" class="px-4 py-1.5 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700">
+          我知道了
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div id="toast" class="fixed bottom-16 md:bottom-5 right-4 z-50 hidden bg-slate-800 text-white px-3.5 py-2.5 rounded-lg shadow-xl text-xs sm:text-sm flex items-center gap-2 transform transition-all duration-300">
-    <span id="toast-icon">ℹ️</span>
-    <span id="toast-msg">操作成功</span>
-  </div>
-
-  <!-- Application Logic -->
   <script>
     const gradeNameMap = { "1": "一年級", "2": "二年級", "3": "三年級", "4": "四年級", "5": "五年級", "6": "六年級" };
-    
-    // Default 11 classes for Grade 3 (301~311) as requested by user
     const defaultClassesGrade3_11 = ["301", "302", "303", "304", "305", "306", "307", "308", "309", "310", "311"];
-
-    // Cloud Room Engine Endpoints (CORS-enabled free public REST relay)
-    const CLOUD_API_BASE = "https://api.restful-api.dev/objects";
-    const JSONBLOB_API_BASE = "https://jsonblob.com/api/jsonBlob";
 
     let appState = {
       school: "高雄市陽明國小",
       year: 113,
       semester: "一",
       subject: "國語",
-      examPeriod: "一",
+      examPeriod: "期中",
       teacher: "陳美玲 老師",
       version: "南一版",
-      gradeNum: "3", // default 3rd grade
-      gradeLabel: "三年級 1~11 班", // default 11 classes
-      classCount: 11, // default 11
+      gradeNum: "3",
+      gradeLabel: "三年級 1~11 班",
+      classCount: 11,
       classList: [...defaultClassesGrade3_11],
       selectedClass: "301",
       classData: {},
-      roomCode: "", // Real remote cloud room ID
+      roomCode: "",
       reflection: "",
       scenario: "auto"
     };
 
     let distributionChart = null;
-    const STORAGE_KEY = "SCHOOL_GRADE_ANALYZER_CLOUD_ROOM_V7";
+    let printDistributionChart = null;
+    const STORAGE_KEY = "SCHOOL_GRADE_ANALYZER_CLOUD_ROOM_V8";
 
     function showToast(msg, icon = "✅") {
       const toast = document.getElementById("toast");
@@ -982,11 +882,10 @@
       toast.classList.remove("hidden");
       setTimeout(() => {
         toast.classList.add("hidden");
-      }, 4000);
+      }, 3500);
     }
 
     function safeCopy(text, title = "請手動複製以下內容") {
-      let copied = false;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(() => {
           showToast("已成功複製到剪貼簿！");
@@ -995,24 +894,7 @@
         });
         return;
       }
-      try {
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        copied = document.execCommand("copy");
-        document.body.removeChild(textarea);
-      } catch (e) {
-        copied = false;
-      }
-
-      if (copied) {
-        showToast("已成功複製到剪貼簿！");
-      } else {
-        openCopyFallbackModal(text, title);
-      }
+      openCopyFallbackModal(text, title);
     }
 
     function openCopyFallbackModal(text, title) {
@@ -1026,26 +908,12 @@
       }, 50);
     }
 
-    function computeRoomSlug() {
-      const cleanSchool = (appState.school || "YMPS").replace(/\s+/g, '');
-      const year = appState.year || "113";
-      const sem = appState.semester || "1";
-      const g = appState.gradeNum || "3";
-      const sub = (appState.subject || "CHI").replace(/\s+/g, '');
-      return `${cleanSchool}_${year}_${sem}_G${g}_${sub}`;
-    }
-
     function generateClassList(gNum, count) {
       const list = [];
-      const c = parseInt(count, 10) || 11;
-      const g = String(gNum);
-      for (let i = 1; i <= c; i++) {
-        if (["1", "2", "3", "4", "5", "6"].includes(g)) {
-          const suffix = i < 10 ? `0${i}` : `${i}`;
-          list.push(`${g}${suffix}`);
-        } else {
-          list.push(`${g ? g : ''}${i}班`);
-        }
+      const prefix = parseInt(gNum, 10);
+      for (let i = 1; i <= count; i++) {
+        const cNum = i < 10 ? `0${i}` : `${i}`;
+        list.push(`${prefix}${cNum}`);
       }
       return list;
     }
@@ -1068,13 +936,11 @@
         console.warn("Could not load from localStorage", e);
       }
 
-      // Detect if URL wants a different grade, a different room, or a clean slate
       const isSwitchingGrade = gradeParam && gradeParam !== appState.gradeNum;
       const isSwitchingRoom = roomParam && roomParam !== appState.roomCode;
       const isForcedClean = cleanParam === "1" || cleanParam === "true";
 
       if (isSwitchingGrade || isSwitchingRoom || isForcedClean) {
-        // Complete data isolation: Wipe old class data so it never bleeds into another grade or room!
         appState.classData = {};
         if (gradeParam) appState.gradeNum = gradeParam;
         if (countParam) appState.classCount = parseInt(countParam, 10) || 11;
@@ -1090,18 +956,13 @@
         const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
         appState.gradeLabel = `${gName} 1~${appState.classList.length} 班`;
       } else {
-        // Normal resume of current session
-        if (gradeParam && gradeParam !== appState.gradeNum) {
-          appState.gradeNum = gradeParam;
-        }
+        if (gradeParam && gradeParam !== appState.gradeNum) appState.gradeNum = gradeParam;
         if (countParam) {
           const parsedCount = parseInt(countParam, 10);
           if (parsedCount > 0) appState.classCount = parsedCount;
         }
         if (subParam) appState.subject = subParam;
-        if (roomParam && roomParam.trim() !== "") {
-          appState.roomCode = roomParam.trim();
-        }
+        if (roomParam && roomParam.trim() !== "") appState.roomCode = roomParam.trim();
         if (!appState.classList || appState.classList.length === 0) {
           appState.classList = generateClassList(appState.gradeNum || "3", appState.classCount || 11);
           const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
@@ -1109,7 +970,6 @@
         }
       }
 
-      // Parse URL-encoded data payload if present
       const dataParam = urlParams.get("d");
       if (dataParam) {
         try {
@@ -1146,7 +1006,6 @@
         }
       }
 
-      // Ensure all classes in classList exist in classData
       appState.classList.forEach(cls => {
         if (!appState.classData[cls]) {
           appState.classData[cls] = {
@@ -1162,6 +1021,7 @@
         appState.selectedClass = appState.classList[0] || "301";
       }
     }
+
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
@@ -1170,10 +1030,6 @@
       }
     }
 
-    // ==========================================
-    // Realtime Cloud Room Synchronization Logic
-    // Dual-Engine: High-Speed PubSub Relay (ntfy.sh) + JSON Bin + URL Param Fallback
-    // ==========================================
     function serializeClassesToUrlParam() {
       const parts = [];
       if (appState.classData && appState.classList) {
@@ -1217,7 +1073,6 @@
         renderApp();
       }
 
-      // Broadcast any locally filled classes to the room
       for (const cId in appState.classData) {
         const d = appState.classData[cId];
         if (d && d.filled) {
@@ -1241,7 +1096,6 @@
       let updatedCount = 0;
       const topic = getSyncTopic();
 
-      // Channel 1: High-Speed PubSub Relay (ntfy.sh)
       try {
         const resp = await fetchWithTimeout(`https://ntfy.sh/${topic}/json?poll=1&since=all`, {
           cache: "no-store",
@@ -1269,30 +1123,6 @@
         }
       } catch (errPub) {
         console.warn("Pubsub sync failed:", errPub);
-      }
-
-      // Channel 2: JSON Bin Storage (if roomCode starts with np_)
-      if (appState.roomCode && appState.roomCode.startsWith("np_")) {
-        try {
-          const id = appState.roomCode.replace("np_", "");
-          const resp = await fetchWithTimeout(`https://api.npoint.io/${id}`, { cache: "no-store", timeout: 4000 });
-          if (resp.ok) {
-            const json = await resp.json();
-            const cloudClasses = json.c || json.classes;
-            if (cloudClasses && typeof cloudClasses === "object") {
-              for (const cId in cloudClasses) {
-                const item = cloudClasses[cId];
-                if (item && item.filled) {
-                  appState.classData[cId] = item;
-                  if (!appState.classList.includes(cId)) {
-                    appState.classList.push(cId);
-                  }
-                  updatedCount++;
-                }
-              }
-            }
-          }
-        } catch(e) {}
       }
 
       if (updatedCount > 0) {
@@ -1328,7 +1158,6 @@
       let success = false;
       const topic = getSyncTopic();
 
-      // Channel 1: High-Speed PubSub Relay (ntfy.sh, zero-preflight text/plain, global CDN)
       try {
         const resp = await fetchWithTimeout(`https://ntfy.sh/${topic}`, {
           method: "POST",
@@ -1336,41 +1165,9 @@
           body: JSON.stringify(payload),
           timeout: 4000
         });
-        if (resp.ok) {
-          success = true;
-        }
+        if (resp.ok) success = true;
       } catch (errPub) {
-        console.warn("Pubsub relay push failed:", errPub);
-      }
-
-      // Channel 2: JSON Bin Storage (api.npoint.io) if roomCode has np_
-      if (appState.roomCode && appState.roomCode.startsWith("np_")) {
-        try {
-          const id = appState.roomCode.replace("np_", "");
-          let currentClasses = {};
-          try {
-            const r = await fetchWithTimeout(`https://api.npoint.io/${id}`, { cache: "no-store", timeout: 3000 });
-            if (r.ok) {
-              const j = await r.json();
-              currentClasses = j.c || j.classes || {};
-            }
-          } catch(e) {}
-          currentClasses[cId] = d;
-
-          const putResp = await fetchWithTimeout(`https://api.npoint.io/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              s: appState.school,
-              g: appState.gradeNum,
-              y: appState.year,
-              c: currentClasses,
-              t: Date.now()
-            }),
-            timeout: 4000
-          });
-          if (putResp.ok) success = true;
-        } catch(e) {}
+        console.warn("Pubsub push failed:", errPub);
       }
 
       const s = calculateSummary();
@@ -1382,63 +1179,51 @@
       renderApp();
     }
 
-        function updateBrowserUrl() {
+    function updateBrowserUrl() {
       try {
         const url = new URL(window.location.href);
-        if (appState.roomCode) {
-          url.searchParams.set("room", appState.roomCode);
-        }
+        if (appState.roomCode) url.searchParams.set("room", appState.roomCode);
         url.searchParams.set("grade", appState.gradeNum || "3");
         url.searchParams.set("count", appState.classList.length || "11");
         url.searchParams.set("sub", appState.subject || "國語");
         url.searchParams.set("openExternalBrowser", "1");
         const dParam = serializeClassesToUrlParam();
-        if (dParam) {
-          url.searchParams.set("d", decodeURIComponent(dParam));
-        }
+        if (dParam) url.searchParams.set("d", decodeURIComponent(dParam));
         window.history.replaceState({}, "", url.toString());
       } catch(e) {}
     }
 
     function getDedicatedLineUrl() {
       let currentUrl = window.location.href.split("?")[0];
-      if (currentUrl.includes("about:blank") || currentUrl.startsWith("blob:")) {
-        currentUrl = "";
-      }
       const room = encodeURIComponent(appState.roomCode || "");
       const g = encodeURIComponent(appState.gradeNum || "3");
       const count = encodeURIComponent(appState.classList.length || "11");
       const sub = encodeURIComponent(appState.subject || "國語");
       const dParam = serializeClassesToUrlParam();
       let url = `${currentUrl}?room=${room}&grade=${g}&count=${count}&sub=${sub}&openExternalBrowser=1`;
-      if (dParam) {
-        url += `&d=${dParam}`;
-      }
+      if (dParam) url += `&d=${dParam}`;
       return url;
     }
 
-        function calculateSummary() {
+    function calculateSummary() {
       let sum100 = 0, sum90 = 0, sum80 = 0, sum70 = 0, sum60 = 0, sumBelow60 = 0;
       let filledClasses = 0;
 
-      appState.classList.forEach(cls => {
-        const d = appState.classData[cls];
+      appState.classList.forEach(cId => {
+        const d = appState.classData[cId];
         if (d && d.filled) {
           filledClasses++;
-          sum100 += Number(d.c100 || 0);
-          sum90 += Number(d.c90 || 0);
-          sum80 += Number(d.c80 || 0);
-          sum70 += Number(d.c70 || 0);
-          sum60 += Number(d.c60 || 0);
-          sumBelow60 += Number(d.cBelow60 || 0);
+          sum100 += (d.c100 || 0);
+          sum90 += (d.c90 || 0);
+          sum80 += (d.c80 || 0);
+          sum70 += (d.c70 || 0);
+          sum60 += (d.c60 || 0);
+          sumBelow60 += (d.cBelow60 || 0);
         }
       });
 
       const totalCount = sum100 + sum90 + sum80 + sum70 + sum60 + sumBelow60;
-      const calcRatio = (cnt) => {
-        if (totalCount === 0) return "0.0";
-        return ((cnt / totalCount) * 100).toFixed(1);
-      };
+      const calcRatio = (n) => totalCount > 0 ? ((n / totalCount) * 100).toFixed(1) : "0.0";
 
       return {
         filledClasses,
@@ -1455,6 +1240,28 @@
       };
     }
 
+    function generateReflectionDraft(summary) {
+      const total = summary.totalCount || 1;
+      const passCount = summary.sum100 + summary.sum90 + summary.sum80 + summary.sum70 + summary.sum60;
+      const passRate = ((passCount / total) * 100).toFixed(1);
+      const masterCount = summary.sum100 + summary.sum90 + summary.sum80;
+      const masterRate = ((masterCount / total) * 100).toFixed(1);
+      const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
+
+      return `一、試題難易與評量整體表現：
+本次定期評量全學年成績呈良好常態分佈，全學年及格率達 ${passRate}%，80~99分中堅主力群佔比穩定（達 ${masterRate}%），展現教學常態落實與合理之評量鑑別度。
+
+二、學生學習狀況與常見錯誤樣態：
+多數學生成績已能掌握本學期${gName}核心課程指標；普遍失分點多在於「審題不夠周延」之習慣問題，以及需要靈活變通的情境題型。
+
+三、後續教學補救與補強措施：
+1. 加強審題檢查習慣培養，於課堂示範劃記題目關鍵字與自我檢證步驟。
+2. 針對 60分以下學生（${summary.sumBelow60}人，${summary.ratioBelow60}%）進行個別診斷，針對特定單元落後提供客製化學習單補強。
+
+四、命題修正與研討建議：
+本次試題命題嚴謹、版面字體適中、題型多元兼顧素養，未來可延續此命題標準。`;
+    }
+
     function renderApp() {
       const summary = calculateSummary();
       const currentGradeName = gradeNameMap[appState.gradeNum] || appState.gradeLabel || "三年級";
@@ -1464,194 +1271,188 @@
       const settingsRoomBadge = document.getElementById("settings-room-code-badge");
       const statusIcon = document.getElementById("cloud-room-status-icon");
       const titleText = document.getElementById("cloud-room-title-text");
+      const descText = document.getElementById("cloud-room-desc-text");
 
       if (appState.roomCode) {
-        if (roomBadge) roomBadge.textContent = appState.roomCode.substring(0, 16);
-        if (settingsRoomBadge) settingsRoomBadge.textContent = appState.roomCode.substring(0, 16);
+        const displayCode = appState.roomCode.length > 14 ? appState.roomCode.substring(0, 14) + "..." : appState.roomCode;
+        if (roomBadge) roomBadge.textContent = displayCode;
+        if (settingsRoomBadge) settingsRoomBadge.textContent = displayCode;
         if (statusIcon) statusIcon.textContent = "🟢";
         if (titleText) titleText.textContent = "免帳號雲端房間已連線：";
-      } else {
-        if (roomBadge) roomBadge.textContent = "尚未連線 (點右方複製連結)";
-        if (settingsRoomBadge) settingsRoomBadge.textContent = "點擊複製連結即自動開啟";
-        if (statusIcon) statusIcon.textContent = "🟡";
-        if (titleText) titleText.textContent = "雲端房間狀態：";
+        if (descText) descText.textContent = "各班手機直接儲存，雲端自動記錄在一起！所有人點進同一個連結即時看見最後總計！";
       }
 
       // Header labels
-      document.getElementById("header-school-name").textContent = appState.school || "國小評量結果分析表";
+      document.getElementById("header-school-name").textContent = appState.school || "高雄市陽明國小";
       document.getElementById("top-school-subtitle").textContent = `${appState.school} ${appState.year}學年 第${appState.semester}學期 ${appState.gradeLabel} ${appState.subject}科`;
       document.getElementById("display-grade-prefix").textContent = currentGradeName;
 
-      // Settings Inputs sync
-      document.getElementById("info-school").value = appState.school;
-      document.getElementById("info-year").value = appState.year;
-      document.getElementById("info-semester").value = appState.semester;
-      document.getElementById("info-subject").value = appState.subject;
-      document.getElementById("info-exam-period").value = appState.examPeriod;
-      document.getElementById("info-teacher").value = appState.teacher;
-      document.getElementById("info-version").value = appState.version;
-      document.getElementById("info-grade-label").value = appState.gradeLabel;
-
-      if (document.getElementById("cfg-select-grade")) {
-        document.getElementById("cfg-select-grade").value = appState.gradeNum || "3";
-      }
-      if (document.getElementById("cfg-select-class-count")) {
-        const countStr = String(appState.classList.length);
-        const selCount = document.getElementById("cfg-select-class-count");
-        if (selCount.querySelector(`option[value="${countStr}"]`)) {
-          selCount.value = countStr;
-        } else {
-          selCount.value = "custom";
-        }
-      }
-
-      // Class Selector
-      const selector = document.getElementById("current-class-selector");
-      selector.innerHTML = "";
-      appState.classList.forEach(cls => {
-        const opt = document.createElement("option");
-        opt.value = cls;
-        const d = appState.classData[cls];
-        const statusText = d && d.filled ? "✓已填" : "待填";
-        opt.textContent = `${cls} 班 (${statusText})`;
-        if (cls === appState.selectedClass) opt.selected = true;
-        selector.appendChild(opt);
-      });
-
-      // Progress bar & counts
+      // Status card
+      document.getElementById("submitted-count").textContent = summary.filledClasses;
+      document.getElementById("total-class-count").textContent = summary.totalClasses;
       const pct = summary.totalClasses > 0 ? Math.round((summary.filledClasses / summary.totalClasses) * 100) : 0;
       document.getElementById("progress-percent").textContent = `${pct}%`;
       document.getElementById("progress-bar").style.width = `${pct}%`;
-      document.getElementById("submitted-count").textContent = summary.filledClasses;
-      document.getElementById("total-class-count").textContent = summary.totalClasses;
 
       const statusBadge = document.getElementById("status-badge");
       if (summary.isAllFilled) {
+        statusBadge.textContent = "🎉 全學年已全數填報完畢";
         statusBadge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-        statusBadge.textContent = `🎉 全學年 ${summary.totalClasses} 班全數完成填報`;
       } else {
-        statusBadge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
         statusBadge.textContent = `填報中 (尚餘 ${summary.totalClasses - summary.filledClasses} 班)`;
+        statusBadge.className = "px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
       }
 
-      // Horizontal quick class picker chips
-      const badgesContainer = document.getElementById("class-badges-container");
-      badgesContainer.innerHTML = "";
-      appState.classList.forEach(cls => {
-        const d = appState.classData[cls];
+      // Render Class badges in status card
+      const badgeContainer = document.getElementById("class-badges-container");
+      badgeContainer.innerHTML = "";
+      appState.classList.forEach(cId => {
+        const d = appState.classData[cId];
         const isFilled = d && d.filled;
-        const isSelected = cls === appState.selectedClass;
-
-        const badge = document.createElement("button");
-        badge.type = "button";
-        let baseClass = "text-xs px-2.5 py-1 rounded-md font-semibold shrink-0 border transition ";
-        if (isSelected) {
-          baseClass += "ring-2 ring-indigo-500 shadow-xs ";
-        }
-        if (isFilled) {
-          baseClass += "bg-emerald-50 text-emerald-800 border-emerald-300";
-        } else {
-          baseClass += "bg-slate-100 text-slate-500 border-slate-300";
-        }
-        badge.className = baseClass;
-        badge.innerHTML = `${cls}班 <span class="text-[10px]">${isFilled ? "✓" : "未"}</span>`;
-        badge.addEventListener("click", () => {
-          appState.selectedClass = cls;
-          renderApp();
+        const btn = document.createElement("button");
+        btn.className = `px-2.5 py-1 rounded-md text-xs font-bold shrink-0 transition flex items-center gap-1 ${
+          isFilled
+            ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
+            : "bg-slate-50 text-slate-500 border border-slate-200"
+        } ${appState.selectedClass === cId ? "ring-2 ring-indigo-600 font-black" : ""}`;
+        btn.innerHTML = `<span>${cId}班</span><span>${isFilled ? "✓" : "未"}</span>`;
+        btn.addEventListener("click", () => {
+          appState.selectedClass = cId;
           switchTab("tab-input");
+          renderInputTab();
         });
-        badgesContainer.appendChild(badge);
+        badgeContainer.appendChild(btn);
       });
 
-      // Current Class Inputs
-      const curr = appState.classData[appState.selectedClass] || {
-        c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false
-      };
-      document.getElementById("input-score-100").value = curr.c100 || 0;
-      document.getElementById("input-score-90").value = curr.c90 || 0;
-      document.getElementById("input-score-80").value = curr.c80 || 0;
-      document.getElementById("input-score-70").value = curr.c70 || 0;
-      document.getElementById("input-score-60").value = curr.c60 || 0;
-      document.getElementById("input-score-below60").value = curr.cBelow60 || 0;
-      document.getElementById("input-class-note").value = curr.note || "";
+      // Update Input Tab Class Select Dropdown
+      const select = document.getElementById("select-active-class");
+      select.innerHTML = "";
+      appState.classList.forEach(cId => {
+        const isFilled = appState.classData[cId] && appState.classData[cId].filled;
+        const opt = document.createElement("option");
+        opt.value = cId;
+        opt.textContent = `${cId} 班 ${isFilled ? "(✓已填)" : ""}`;
+        if (cId === appState.selectedClass) opt.selected = true;
+        select.appendChild(opt);
+      });
 
-      const cTotal = Number(curr.c100 || 0) + Number(curr.c90 || 0) + Number(curr.c80 || 0) + Number(curr.c70 || 0) + Number(curr.c60 || 0) + Number(curr.cBelow60 || 0);
-      const cHigh = Number(curr.c100 || 0) + Number(curr.c90 || 0);
-      const cPass = cTotal - Number(curr.cBelow60 || 0);
-      const cRemedial = Number(curr.cBelow60 || 0);
+      renderInputTab();
+      renderSummaryTab(summary);
+      renderReflectionTab(summary);
+    }
 
-      document.getElementById("stat-class-total").textContent = `${cTotal} 人`;
-      document.getElementById("stat-class-high").textContent = `${cHigh} 人 (${cTotal > 0 ? ((cHigh / cTotal) * 100).toFixed(1) : 0}%)`;
-      document.getElementById("stat-class-pass").textContent = `${cPass} 人 (${cTotal > 0 ? ((cPass / cTotal) * 100).toFixed(1) : 0}%)`;
-      document.getElementById("stat-class-remedial").textContent = `${cRemedial} 人 (${cTotal > 0 ? ((cRemedial / cTotal) * 100).toFixed(1) : 0}%)`;
+    function renderInputTab() {
+      const cId = appState.selectedClass;
+      const d = appState.classData[cId] || { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
 
-      const classStatusBadge = document.getElementById("class-status-badge");
-      if (curr.filled) {
-        classStatusBadge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800";
-        classStatusBadge.textContent = "已儲存填報";
+      document.getElementById("input-c100").value = d.c100 || 0;
+      document.getElementById("input-c90").value = d.c90 || 0;
+      document.getElementById("input-c80").value = d.c80 || 0;
+      document.getElementById("input-c70").value = d.c70 || 0;
+      document.getElementById("input-c60").value = d.c60 || 0;
+      document.getElementById("input-cBelow60").value = d.cBelow60 || 0;
+      document.getElementById("input-class-note").value = d.note || "";
+
+      const total = (d.c100 || 0) + (d.c90 || 0) + (d.c80 || 0) + (d.c70 || 0) + (d.c60 || 0) + (d.cBelow60 || 0);
+      document.getElementById("active-class-total").textContent = total;
+
+      const fillBadge = document.getElementById("class-fill-status-badge");
+      if (d.filled) {
+        fillBadge.textContent = "已儲存填報";
+        fillBadge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800";
       } else {
-        classStatusBadge.className = "px-2 py-0.5 rounded text-[11px] font-bold bg-slate-200 text-slate-600";
-        classStatusBadge.textContent = "未填報";
+        fillBadge.textContent = "未儲存";
+        fillBadge.className = "px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-200 text-slate-700";
       }
+    }
 
-      // Summary Table numbers
-      document.getElementById("sum-count-100").textContent = summary.sum100;
-      document.getElementById("sum-ratio-100").textContent = summary.ratio100;
-      document.getElementById("sum-count-90").textContent = summary.sum90;
-      document.getElementById("sum-ratio-90").textContent = summary.ratio90;
-      document.getElementById("sum-count-80").textContent = summary.sum80;
-      document.getElementById("sum-ratio-80").textContent = summary.ratio80;
-      document.getElementById("sum-count-70").textContent = summary.sum70;
-      document.getElementById("sum-ratio-70").textContent = summary.ratio70;
-      document.getElementById("sum-count-60").textContent = summary.sum60;
-      document.getElementById("sum-ratio-60").textContent = summary.ratio60;
-      document.getElementById("sum-count-below60").textContent = summary.sumBelow60;
-      document.getElementById("sum-ratio-below60").textContent = summary.ratioBelow60;
-      document.getElementById("sum-count-total").textContent = summary.totalCount;
+    function renderSummaryTab(summary) {
+      document.getElementById("metric-total-students").textContent = summary.totalCount;
+      const passCount = summary.sum100 + summary.sum90 + summary.sum80 + summary.sum70 + summary.sum60;
+      const passRate = summary.totalCount > 0 ? ((passCount / summary.totalCount) * 100).toFixed(1) : "0.0";
+      document.getElementById("metric-pass-rate").textContent = passRate;
+      const masterCount = summary.sum100 + summary.sum90 + summary.sum80;
+      const masterRate = summary.totalCount > 0 ? ((masterCount / summary.totalCount) * 100).toFixed(1) : "0.0";
+      document.getElementById("metric-master-rate").textContent = masterRate;
+      document.getElementById("metric-fail-count").textContent = summary.sumBelow60;
 
-      // Breakdown Table
-      const breakdownBody = document.getElementById("breakdown-tbody");
-      breakdownBody.innerHTML = "";
-      appState.classList.forEach(cls => {
-        const d = appState.classData[cls] || {};
-        const isF = d.filled;
-        const tot = Number(d.c100 || 0) + Number(d.c90 || 0) + Number(d.c80 || 0) + Number(d.c70 || 0) + Number(d.c60 || 0) + Number(d.cBelow60 || 0);
-        const pass = tot - Number(d.cBelow60 || 0);
-        const pRate = tot > 0 ? ((pass / tot) * 100).toFixed(1) + "%" : "-";
+      // Summary Table Rows
+      const tbody = document.getElementById("summary-table-body");
+      tbody.innerHTML = `
+        <tr>
+          <td class="p-2.5 text-center font-bold text-indigo-900">100 分</td>
+          <td class="p-2.5 text-center font-bold">${summary.sum100} 人</td>
+          <td class="p-2.5 text-center text-indigo-700 font-bold">${summary.ratio100}%</td>
+          <td class="p-2.5 text-slate-600">頂尖精熟群，完全掌握概念</td>
+        </tr>
+        <tr>
+          <td class="p-2.5 text-center font-bold text-blue-900">90 ～ 99 分</td>
+          <td class="p-2.5 text-center font-bold">${summary.sum90} 人</td>
+          <td class="p-2.5 text-center text-blue-700 font-bold">${summary.ratio90}%</td>
+          <td class="p-2.5 text-slate-600">精熟主力群，基本觀念穩固</td>
+        </tr>
+        <tr>
+          <td class="p-2.5 text-center font-bold text-cyan-900">80 ～ 89 分</td>
+          <td class="p-2.5 text-center font-bold">${summary.sum80} 人</td>
+          <td class="p-2.5 text-center text-cyan-700 font-bold">${summary.ratio80}%</td>
+          <td class="p-2.5 text-slate-600">中堅穩定群，偶有審題失誤</td>
+        </tr>
+        <tr>
+          <td class="p-2.5 text-center font-bold text-amber-900">70 ～ 79 分</td>
+          <td class="p-2.5 text-center font-bold">${summary.sum70} 人</td>
+          <td class="p-2.5 text-center text-amber-700 font-bold">${summary.ratio70}%</td>
+          <td class="p-2.5 text-slate-600">基礎達標群，需加強細節熟練度</td>
+        </tr>
+        <tr>
+          <td class="p-2.5 text-center font-bold text-orange-900">60 ～ 69 分</td>
+          <td class="p-2.5 text-center font-bold">${summary.sum60} 人</td>
+          <td class="p-2.5 text-center text-orange-700 font-bold">${summary.ratio60}%</td>
+          <td class="p-2.5 text-slate-600">及格邊緣群，概念部分模糊</td>
+        </tr>
+        <tr class="bg-rose-50/60">
+          <td class="p-2.5 text-center font-bold text-rose-700">60 分以下</td>
+          <td class="p-2.5 text-center font-bold text-rose-700">${summary.sumBelow60} 人</td>
+          <td class="p-2.5 text-center text-rose-700 font-bold">${summary.ratioBelow60}%</td>
+          <td class="p-2.5 text-rose-700 font-medium">待加強輔導群，需進行差異化個別診斷</td>
+        </tr>
+        <tr class="bg-slate-100 font-bold text-slate-900">
+          <td class="p-2.5 text-center">總　人數</td>
+          <td class="p-2.5 text-center">${summary.totalCount} 人</td>
+          <td class="p-2.5 text-center">100.0%</td>
+          <td class="p-2.5 text-slate-500">全學年累計填報人數</td>
+        </tr>
+      `;
 
+      // Class Breakdown Table
+      const cBody = document.getElementById("class-breakdown-table-body");
+      cBody.innerHTML = "";
+      appState.classList.forEach(cId => {
+        const d = appState.classData[cId];
+        const isF = d && d.filled;
+        const total = isF ? ((d.c100||0)+(d.c90||0)+(d.c80||0)+(d.c70||0)+(d.c60||0)+(d.cBelow60||0)) : 0;
         const tr = document.createElement("tr");
         tr.className = isF ? "hover:bg-slate-50" : "bg-slate-50/50 text-slate-400";
         tr.innerHTML = `
-          <td class="border border-slate-200 p-1.5 font-bold">${cls}</td>
-          <td class="border border-slate-200 p-1.5">
-            <span class="px-1 py-0.5 rounded text-[10px] ${isF ? 'bg-emerald-100 text-emerald-700 font-bold' : 'bg-slate-200 text-slate-500'}">
-              ${isF ? '已填' : '未填'}
-            </span>
-          </td>
-          <td class="border border-slate-200 p-1.5">${d.c100 || 0}</td>
-          <td class="border border-slate-200 p-1.5">${d.c90 || 0}</td>
-          <td class="border border-slate-200 p-1.5">${d.c80 || 0}</td>
-          <td class="border border-slate-200 p-1.5">${d.c70 || 0}</td>
-          <td class="border border-slate-200 p-1.5">${d.c60 || 0}</td>
-          <td class="border border-slate-200 p-1.5 text-rose-600 font-semibold">${d.cBelow60 || 0}</td>
-          <td class="border border-slate-200 p-1.5 font-bold">${tot}</td>
-          <td class="border border-slate-200 p-1.5">${pRate}</td>
-          <td class="border border-slate-200 p-1.5 text-left truncate max-w-[120px] text-[10px] text-slate-500">${d.note || '-'}</td>
+          <td class="p-2 font-bold ${isF ? "text-indigo-900" : "text-slate-400"}">${cId}班</td>
+          <td class="p-2">${isF ? d.c100 : "-"}</td>
+          <td class="p-2">${isF ? d.c90 : "-"}</td>
+          <td class="p-2">${isF ? d.c80 : "-"}</td>
+          <td class="p-2">${isF ? d.c70 : "-"}</td>
+          <td class="p-2">${isF ? d.c60 : "-"}</td>
+          <td class="p-2 font-bold ${isF && d.cBelow60 > 0 ? "text-rose-600" : ""}">${isF ? d.cBelow60 : "-"}</td>
+          <td class="p-2 font-bold ${isF ? "text-slate-900" : ""}">${isF ? total : "-"}</td>
+          <td class="p-2 text-left truncate max-w-[150px] text-slate-500">${isF && d.note ? d.note : "-"}</td>
         `;
-        breakdownBody.appendChild(tr);
+        cBody.appendChild(tr);
       });
 
       renderChart(summary);
-
-      if (!appState.reflection) {
-        generateReflection(false);
-      }
-      document.getElementById("textarea-reflection").value = appState.reflection;
     }
 
     function renderChart(summary) {
-      const ctx = document.getElementById("gradeDistributionChart").getContext("2d");
-      const labels = ["100分", "90~99", "80~89", "70~79", "60~69", "<60分"];
+      const ctx = document.getElementById("grade-distribution-chart");
+      if (!ctx) return;
+
       const data = [
         summary.sum100,
         summary.sum90,
@@ -1668,20 +1469,20 @@
       }
 
       distributionChart = new Chart(ctx, {
-        type: "bar",
+        type: 'line',
         data: {
-          labels: labels,
+          labels: ['100分', '90-99分', '80-89分', '70-79分', '60-69分', '<60分'],
           datasets: [{
+            label: '全學年人數分佈',
             data: data,
-            backgroundColor: [
-              "rgba(79, 70, 229, 0.85)",
-              "rgba(59, 130, 246, 0.85)",
-              "rgba(20, 184, 166, 0.85)",
-              "rgba(245, 158, 11, 0.85)",
-              "rgba(249, 115, 22, 0.85)",
-              "rgba(244, 63, 94, 0.85)"
-            ],
-            borderRadius: 4
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#4f46e5',
+            pointRadius: 5,
+            pointHoverRadius: 7
           }]
         },
         options: {
@@ -1700,219 +1501,269 @@
       });
     }
 
-    function generateReflection(triggerToast = true) {
-      const summary = calculateSummary();
-      const subject = appState.subject || "學科";
-      const total = summary.totalCount;
-      const passCount = total - summary.sumBelow60;
-      const passRate = total > 0 ? ((passCount / total) * 100).toFixed(1) : "0.0";
-      const highRate = total > 0 ? (((summary.sum100 + summary.sum90) / total) * 100).toFixed(1) : "0.0";
-      const remedialRate = summary.ratioBelow60;
-      const gradeText = gradeNameMap[appState.gradeNum] || appState.gradeLabel || "三年級";
-
-      let scenario = document.getElementById("select-reflection-scenario").value;
-      if (scenario === "auto") {
-        if (total === 0) scenario = "normal";
-        else if (parseFloat(passRate) < 75.0) scenario = "hard";
-        else if (parseFloat(highRate) > 60.0) scenario = "high";
-        else if (parseFloat(summary.ratioBelow60) > 15.0 && parseFloat(highRate) > 35.0) scenario = "bimodal";
-        else scenario = "normal";
+    function renderReflectionTab(summary) {
+      const textarea = document.getElementById("textarea-reflection");
+      if (!appState.reflection || appState.reflection.trim() === "") {
+        appState.reflection = generateReflectionDraft(summary);
       }
-
-      let content = "";
-      if (scenario === "high") {
-        content = `一、試題難易度與評量成效分析：
-本次${subject}定期評量全學年整體表現優異，高分群（90分以上）學生佔比達 ${highRate}%，及格率高達 ${passRate}%。試卷基本觀念題型設計清楚合宜，${gradeText}學生普遍對各單元基礎核心知識與重點掌握扎實，學習成就感高。
-
-二、學生答題與迷思弱點診斷：
-部分高分群學生在最後一至二題「高層次情境應用題」或「長文閱讀理解題」出現粗心審題現象；中後段學生則在跨單元整合題型上較缺乏連結能力。
-
-三、教學精進與個別化輔導策略：
-1. 拔尖深化：針對高分群學生，日後課堂可增派「素養導向延伸挑戰單」與高階閱讀探究任務，培養自主思考及批判反思能力。
-2. 鞏固基本：針對極少數待加強學生（佔 ${remedialRate}%），由任課教師與導師合作進行晨光課或課後一對一觀念釐清，落實攜手補救教學。
-
-四、未來定期評量命題改進方向：
-試題難易度可略微提高素養情境題之鑑別度，適度增加開放性與推論題比例，兼顧基礎題與高層次思維題之配分平衡。`;
-      } else if (scenario === "hard") {
-        content = `一、試題難易度與評量成效分析：
-本次${subject}定期評量全學年及格率為 ${passRate}%，60分以下學生佔比為 ${remedialRate}%，整體鑑別度偏高，試題稍偏向中高難度。題型涵蓋甚廣且文字閱讀量較大，${gradeText}學童在時間掌控與長篇題幹理解上呈現挑戰。
-
-二、學生學習困難與常見迷思：
-1. 語意理解受限：題目情境敘述較長時，學童不易迅速抓取核心提問關鍵字。
-2. 基礎觀念未精熟：中後段學生在基礎字詞辨析及情境轉換時常有混淆現象。
-
-三、補救教學與分層輔導對策：
-1. 實施單元重難點小組補救教學，利用圖卡或生活化情境重新架構迷思概念。
-2. 課堂實施差異化教學，對理解較慢學童給予鷹架支撐，重建學習信心。
-
-四、未來定期評量命題改進建議：
-1. 審慎控制試卷整體題量與閱讀文字長度，預留充足作答與檢查時間。
-2. 增加基本概念題之配分權重，確保評量能真正落實檢核學生之基本學力。`;
-      } else if (scenario === "bimodal") {
-        content = `一、試題難易度與成績分佈特徵：
-本次${subject}評量呈現雙峰（M型化）分佈走勢：90分以上優等群達 ${highRate}%，但60分以下待加強群亦達 ${remedialRate}%。試題具備良好鑑別度，但亦凸顯${gradeText}學生在學習起點與個別差異上的落差。
-
-二、學生表現兩極化成因探討：
-高分群學生理解敏捷且具備良好自學習慣；低分群學生多因注音國字基礎薄弱或專注力不足，導致未能跟上進度。
-
-三、教學精進與個別化輔導規劃：
-1. 推動課堂「異質分組合作學習」：由同儕擔任小老師協助輔導。
-2. 精準分流補救教學：將不及格學生列入學年學習扶助對象，鎖定核心基本學習內容進行重教重測。
-
-四、命題檢討與後續改進：
-試卷架構應維持階梯式布題，避免難題過於集中在前段造成部分學童挫折放棄。`;
-      } else {
-        content = `一、試題難易度與評量整體表現：
-本次${subject}定期評量全學年成績呈良好常態分佈，全學年及格率達 ${passRate}%，70~89分中堅主力群佔比穩定，展現教學常態落實與合理之評量鑑別度。
-
-二、學生學習狀況與常見錯誤樣態：
-多數學生已完全掌握本學期${gradeText}核心課程指標；普遍失分點多在於「審題不夠周延」之習慣問題，以及需要靈活變通的情境題目。
-
-三、後續教學精進與補強措施：
-1. 加強審題檢查習慣培養，於課堂示範劃記題目關鍵字與自我驗證步驟。
-2. 針對 60 分以下學生（${summary.sumBelow60}人，${remedialRate}%）進行個別診斷，針對特定單元落後提供客製化學習單補強。
-
-四、命題修正與研討建議：
-本次試題命題嚴謹、版面字體適中、題型多元兼顧素養，未來可延續此命題標準。`;
-      }
-
-      appState.reflection = content;
-      document.getElementById("textarea-reflection").value = content;
-      saveState();
-
-      if (triggerToast) {
-        showToast("已依據當前學年數據重新產生教學反思建議！");
-      }
+      textarea.value = appState.reflection;
     }
 
-    // Default Demo: 11 Classes for Grade 3 (301~311)
-    function loadUniversalDemo() {
-      const gNum = appState.gradeNum || "3";
-      const gName = gradeNameMap[gNum] || "三年級";
-      const count = appState.classList.length || 11;
+    function renderTeacherSignatureGrid() {
+      const container = document.getElementById("print-teacher-grid-container");
+      if (!container) return;
 
-      appState.classData = {};
-      appState.classList.forEach((cls, idx) => {
-        const c100 = 2 + (idx % 4);
-        const c90 = 10 + (idx % 6);
-        const c80 = 7 + ((idx * 2) % 5);
-        const c70 = 2 + (idx % 4);
-        const c60 = 1 + (idx % 2);
-        const cBelow60 = (idx % 3 === 0) ? 1 : 0;
-        appState.classData[cls] = {
-          c100, c90, c80, c70, c60, cBelow60,
-          note: idx === 0 ? "答題認真，字跡工整" : idx === 1 ? "閱讀題理解力佳" : "平時作業確實，發揮穩定",
-          filled: true,
-          updatedAt: new Date().toISOString()
-        };
+      const list = [...appState.classList];
+      const total = list.length;
+      const half = Math.ceil(total / 2);
+
+      const row1Classes = list.slice(0, half);
+      const row2Classes = list.slice(half);
+
+      // Make Row 1 and Row 2 have balanced cells
+      // If row2 has fewer cells than row1, append '命題教師' or '學年召集人'
+      if (row2Classes.length < row1Classes.length) {
+        row2Classes.push("命題教師");
+      }
+
+      const buildRow = (classes) => {
+        const colWidth = (100 / classes.length).toFixed(2);
+        return `<div class="flex w-full">` +
+          classes.map(c => `
+            <div style="width: ${colWidth}%;" class="border-r border-b border-black text-center flex flex-col box-border">
+              <div class="bg-slate-100 font-bold py-1 border-b border-black text-[11px] text-black">${c.includes("教師") ? c : c + " 導師"}</div>
+              <div class="h-12 flex items-center justify-center text-slate-300 text-[10px] font-sans">（簽章）</div>
+            </div>
+          `).join('') +
+        `</div>`;
+      };
+
+      container.innerHTML = buildRow(row1Classes) + buildRow(row2Classes);
+    }
+
+    function openPrintModal() {
+      const summary = calculateSummary();
+      const currentGradeName = gradeNameMap[appState.gradeNum] || appState.gradeLabel || "三年級";
+
+      // Populate Page 1 Header
+      document.getElementById("print-school-title").textContent = 
+        `${appState.school} ${appState.year} 學年度 第${appState.semester}學期 ${appState.subject} 科目 ${appState.examPeriod} 評量 評量結果分析表`;
+      
+      document.getElementById("print-table-subject").textContent = appState.subject;
+      document.getElementById("print-table-grade").textContent = appState.gradeLabel;
+      document.getElementById("print-table-teacher").textContent = appState.teacher;
+      document.getElementById("print-table-version").textContent = appState.version;
+
+      // Populate Page 1 Table
+      const distBody = document.getElementById("print-distribution-body");
+      distBody.innerHTML = `
+        <tr>
+          <td class="p-2 border border-black font-bold">100 分</td>
+          <td class="p-2 border border-black">${summary.sum100} 人</td>
+          <td class="p-2 border border-black">${summary.ratio100} %</td>
+        </tr>
+        <tr>
+          <td class="p-2 border border-black font-bold">90~99 分</td>
+          <td class="p-2 border border-black">${summary.sum90} 人</td>
+          <td class="p-2 border border-black">${summary.ratio90} %</td>
+        </tr>
+        <tr>
+          <td class="p-2 border border-black font-bold">80~89 分</td>
+          <td class="p-2 border border-black">${summary.sum80} 人</td>
+          <td class="p-2 border border-black">${summary.ratio80} %</td>
+        </tr>
+        <tr>
+          <td class="p-2 border border-black font-bold">70~79 分</td>
+          <td class="p-2 border border-black">${summary.sum70} 人</td>
+          <td class="p-2 border border-black">${summary.ratio70} %</td>
+        </tr>
+        <tr>
+          <td class="p-2 border border-black font-bold">60~69 分</td>
+          <td class="p-2 border border-black">${summary.sum60} 人</td>
+          <td class="p-2 border border-black">${summary.ratio60} %</td>
+        </tr>
+        <tr>
+          <td class="p-2 border border-black font-bold">60 分以下</td>
+          <td class="p-2 border border-black">${summary.sumBelow60} 人</td>
+          <td class="p-2 border border-black">${summary.ratioBelow60} %</td>
+        </tr>
+        <tr class="bg-slate-100 font-bold">
+          <td class="p-2 border border-black">總人數</td>
+          <td class="p-2 border border-black">${summary.totalCount} 人</td>
+          <td class="p-2 border border-black">100.0 %</td>
+        </tr>
+      `;
+
+      // Reflection
+      document.getElementById("print-reflection-content").textContent = 
+        document.getElementById("textarea-reflection").value || generateReflectionDraft(summary);
+
+      // Render 2-Row Teacher Signature Grid
+      renderTeacherSignatureGrid();
+
+      // Populate Page 2
+      document.getElementById("print-page2-title").textContent = 
+        `${appState.school} ${appState.year} 學年度 第${appState.semester}學期 ${appState.gradeLabel} ${appState.subject}科 評量統計明細表`;
+      
+      const matrixBody = document.getElementById("print-matrix-body");
+      matrixBody.innerHTML = "";
+      appState.classList.forEach(cId => {
+        const d = appState.classData[cId];
+        const isF = d && d.filled;
+        const total = isF ? ((d.c100||0)+(d.c90||0)+(d.c80||0)+(d.c70||0)+(d.c60||0)+(d.cBelow60||0)) : 0;
+        const pass = isF ? ((d.c100||0)+(d.c90||0)+(d.c80||0)+(d.c70||0)+(d.c60||0)) : 0;
+        const rate = isF && total > 0 ? ((pass/total)*100).toFixed(1) + "%" : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="p-1.5 border border-black font-bold">${cId}班</td>
+          <td class="p-1.5 border border-black">${isF ? d.c100 : "-"}</td>
+          <td class="p-1.5 border border-black">${isF ? d.c90 : "-"}</td>
+          <td class="p-1.5 border border-black">${isF ? d.c80 : "-"}</td>
+          <td class="p-1.5 border border-black">${isF ? d.c70 : "-"}</td>
+          <td class="p-1.5 border border-black">${isF ? d.c60 : "-"}</td>
+          <td class="p-1.5 border border-black">${isF ? d.cBelow60 : "-"}</td>
+          <td class="p-1.5 border border-black font-bold">${isF ? total : "-"}</td>
+          <td class="p-1.5 border border-black font-bold">${rate}</td>
+        `;
+        matrixBody.appendChild(tr);
       });
 
-      appState.selectedClass = appState.classList[0];
-      saveState();
-      generateReflection(false);
-      renderApp();
-      showToast(`⚡ 成功載入 ${gName}（共 ${count} 班）完整示範數據！`);
-    }
+      // Total Row
+      const passTotal = summary.sum100 + summary.sum90 + summary.sum80 + summary.sum70 + summary.sum60;
+      const passTotalRate = summary.totalCount > 0 ? ((passTotal / summary.totalCount) * 100).toFixed(1) + "%" : "0.0%";
+      const trTotal = document.createElement("tr");
+      trTotal.className = "bg-slate-100 font-bold";
+      trTotal.innerHTML = `
+        <td class="p-1.5 border border-black font-bold">全學年加總</td>
+        <td class="p-1.5 border border-black">${summary.sum100}</td>
+        <td class="p-1.5 border border-black">${summary.sum90}</td>
+        <td class="p-1.5 border border-black">${summary.sum80}</td>
+        <td class="p-1.5 border border-black">${summary.sum70}</td>
+        <td class="p-1.5 border border-black">${summary.sum60}</td>
+        <td class="p-1.5 border border-black text-rose-700">${summary.sumBelow60}</td>
+        <td class="p-1.5 border border-black">${summary.totalCount}</td>
+        <td class="p-1.5 border border-black">${passTotalRate}</td>
+      `;
+      matrixBody.appendChild(trTotal);
 
-    function updatePrintModalContent() {
-      const summary = calculateSummary();
+      // Render Print Chart Canvas
+      const pCtx = document.getElementById("print-chart-canvas");
+      if (pCtx) {
+        if (printDistributionChart) printDistributionChart.destroy();
+        printDistributionChart = new Chart(pCtx, {
+          type: 'line',
+          data: {
+            labels: ['100分', '90-99分', '80-89分', '70-79分', '60-69分', '<60分'],
+            datasets: [{
+              label: '全學年人數分佈',
+              data: [summary.sum100, summary.sum90, summary.sum80, summary.sum70, summary.sum60, summary.sumBelow60],
+              borderColor: '#000000',
+              backgroundColor: 'rgba(0, 0, 0, 0.05)',
+              borderWidth: 2,
+              fill: true,
+              pointBackgroundColor: '#000000',
+              pointRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+      }
 
-      document.getElementById("p-school").textContent = appState.school || "高雄市陽明國小";
-      document.getElementById("p-year").textContent = appState.year || "113";
-      document.getElementById("p-semester").textContent = appState.semester || "一";
-      document.getElementById("p-subject").textContent = appState.subject || "國語";
-      document.getElementById("p-exam-period").textContent = appState.examPeriod || "一";
+      const now = new Date();
+      document.getElementById("print-footer-timestamp").textContent = 
+        `報表產生時間：${now.getFullYear() - 1911} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      document.getElementById("p-info-subject").textContent = appState.subject || "國語";
-      document.getElementById("p-info-grade-label").textContent = appState.gradeLabel || "三年級 1~11 班";
-      document.getElementById("p-info-teacher").textContent = appState.teacher || "命題教師";
-      document.getElementById("p-info-version").textContent = appState.version || "版本";
-
-      document.getElementById("p-count-100").textContent = summary.sum100;
-      document.getElementById("p-ratio-100").textContent = summary.ratio100;
-      document.getElementById("p-count-90").textContent = summary.sum90;
-      document.getElementById("p-ratio-90").textContent = summary.ratio90;
-      document.getElementById("p-count-80").textContent = summary.sum80;
-      document.getElementById("p-ratio-80").textContent = summary.ratio80;
-      document.getElementById("p-count-70").textContent = summary.sum70;
-      document.getElementById("p-ratio-70").textContent = summary.ratio70;
-      document.getElementById("p-count-60").textContent = summary.sum60;
-      document.getElementById("p-ratio-60").textContent = summary.ratio60;
-      document.getElementById("p-count-below60").textContent = summary.sumBelow60;
-      document.getElementById("p-ratio-below60").textContent = summary.ratioBelow60;
-      document.getElementById("p-count-total").textContent = summary.totalCount;
-
-      const reflectionText = document.getElementById("textarea-reflection").value || appState.reflection;
-      document.getElementById("p-reflection-lines").textContent = reflectionText;
-
-      const sigContainer = document.getElementById("p-teacher-signatures");
-      const classNames = appState.classList.map(c => `${c}導師`).join("、");
-      sigContainer.textContent = `（會簽：${classNames}）`;
+      document.getElementById("print-modal").classList.remove("hidden");
     }
 
     function switchTab(targetId) {
-      document.querySelectorAll(".tab-pane").forEach(pane => {
-        pane.classList.add("hidden");
-      });
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("hidden"));
       const targetPane = document.getElementById(targetId);
       if (targetPane) targetPane.classList.remove("hidden");
 
-      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
-        if (btn.dataset.target === targetId) {
-          btn.className = "nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-bold transition flex items-center justify-center gap-1 text-white bg-indigo-600 shadow-xs border border-indigo-400";
+      document.querySelectorAll(".nav-tab-btn").forEach(b => {
+        if (b.dataset.target === targetId) {
+          b.className = "nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-bold transition flex items-center justify-center gap-1 text-white bg-indigo-600 shadow-xs border border-indigo-400";
         } else {
-          btn.className = "nav-tab-btn flex-1 py-1 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60";
+          b.className = "nav-tab-btn flex-1 py-1.5 px-1 rounded text-xs font-semibold transition flex items-center justify-center gap-1 text-indigo-100 hover:text-white hover:bg-indigo-700/60";
         }
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function setupEventListeners() {
-      // Compatibility handlers for previous buttons
-      document.getElementById("btn-cloud-refresh")?.addEventListener("click", () => syncCloudRoom(true));
-      document.getElementById("btn-cloud-setup-jump")?.addEventListener("click", () => switchTab("tab-settings"));
-      document.getElementById("btn-save-cloud-url")?.addEventListener("click", () => showToast("已切換為免帳號雲端房間模式！"));
-      document.getElementById("btn-copy-gas-script")?.addEventListener("click", () => showToast("免帳號雲端模式無需設定任何後台！"));
-      document.getElementById("btn-clear-cloud-url")?.addEventListener("click", () => showToast("已重設雲端房間"));
-
       // Tab Switching
       document.querySelectorAll(".nav-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.target));
+      });
+
+      // Stepper Buttons (+ / -)
+      document.querySelectorAll(".btn-step").forEach(btn => {
         btn.addEventListener("click", () => {
-          switchTab(btn.dataset.target);
+          const targetInput = document.getElementById(btn.dataset.target);
+          const step = parseInt(btn.dataset.step, 10);
+          let val = parseInt(targetInput.value, 10) || 0;
+          val = Math.max(0, val + step);
+          targetInput.value = val;
         });
       });
 
-      // Quick Grade Link Generator Buttons
-      document.querySelectorAll(".btn-gen-grade-link").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const g = btn.dataset.grade;
-          const c = btn.dataset.count || "11";
-          const gName = gradeNameMap[g] || `${g}年級`;
-          let base = window.location.href.split("?")[0];
-          if (base.includes("about:blank") || base.startsWith("blob:")) {
-            base = "";
-          }
-          const newRoom = "YMPS113_G" + g + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
-          const link = `${base}?room=${newRoom}&grade=${g}&count=${c}&clean=1&openExternalBrowser=1`;
-          safeCopy(link, `${gName} 全新專屬填報連結：`);
-          showToast(`🎉 已成功複製【${gName}】全新專屬填報連結！\n發給該學年老師，點開就是 0 班全新的獨立房間！`, "✅");
-        });
+      // Class Dropdown Change
+      document.getElementById("select-active-class").addEventListener("change", e => {
+        appState.selectedClass = e.target.value;
+        renderInputTab();
       });
 
-      // Cloud Room Refresh Buttons
-      document.getElementById("btn-cloud-room-refresh").addEventListener("click", () => {
-        syncCloudRoom(true);
-      });
-      document.getElementById("btn-refresh-cloud-manual").addEventListener("click", () => {
-        syncCloudRoom(true);
+      // Save Class Action
+      document.getElementById("btn-save-class").addEventListener("click", () => {
+        const cId = appState.selectedClass;
+        const c100 = parseInt(document.getElementById("input-c100").value, 10) || 0;
+        const c90 = parseInt(document.getElementById("input-c90").value, 10) || 0;
+        const c80 = parseInt(document.getElementById("input-c80").value, 10) || 0;
+        const c70 = parseInt(document.getElementById("input-c70").value, 10) || 0;
+        const c60 = parseInt(document.getElementById("input-c60").value, 10) || 0;
+        const cBelow60 = parseInt(document.getElementById("input-cBelow60").value, 10) || 0;
+        const note = document.getElementById("input-class-note").value.trim();
+
+        appState.classData[cId] = {
+          c100, c90, c80, c70, c60, cBelow60,
+          note,
+          filled: true,
+          updatedAt: new Date().toISOString()
+        };
+
+        saveState();
+        renderApp();
+        uploadClassToCloudRoom(cId);
       });
 
-      // Unified Room Link Copy Handler: Creates room if needed, and copies complete LINE link
+      // Clear Class Action
+      document.getElementById("btn-clear-class").addEventListener("click", () => {
+        const cId = appState.selectedClass;
+        appState.classData[cId] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
+        saveState();
+        renderApp();
+        showToast(`已清空 ${cId} 班數據`);
+      });
+
+      // Cloud Room Refresh
+      document.getElementById("btn-cloud-room-refresh").addEventListener("click", () => syncCloudRoom(true));
+      document.getElementById("btn-refresh-cloud-manual").addEventListener("click", () => syncCloudRoom(true));
+
+      // Unified Room Link Copy Handler
       const copyDedicatedLinkHandler = async () => {
         const copyBtns = [
           document.getElementById("btn-copy-room-link"),
-          document.getElementById("btn-copy-dedicated-line-link"),
-          document.getElementById("btn-copy-line-url")
+          document.getElementById("btn-copy-dedicated-line-link")
         ];
         copyBtns.forEach(b => { if (b) b.textContent = "⏳ 連線中..."; });
 
@@ -1927,13 +1778,26 @@
         copyBtns.forEach(b => { if (b) b.textContent = "📋 複製學年專屬連結"; });
 
         safeCopy(link, "學年專屬 LINE 填報連結 (已內建外開指令，各班開啟自動進同房間同步)：");
-        
         const s = calculateSummary();
-        showToast(`🎉 專屬連結複製成功！已包含 ${s.filledClasses}/${s.totalClasses} 班最新進度，發到 LINE 群組老師點開自動彙整！`, "✅");
+        showToast(`🎉 專屬連結複製成功！已包含 ${s.filledClasses}/${s.totalClasses} 班進度，發到 LINE 群組老師點開自動彙整！`, "✅");
       };
       document.getElementById("btn-copy-room-link").addEventListener("click", copyDedicatedLinkHandler);
       document.getElementById("btn-copy-dedicated-line-link").addEventListener("click", copyDedicatedLinkHandler);
-      document.getElementById("btn-copy-line-url").addEventListener("click", copyDedicatedLinkHandler);
+
+      // Quick Grade Link Generator Buttons for Other Grades
+      document.querySelectorAll(".btn-gen-grade-link").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const g = btn.dataset.grade;
+          const c = btn.dataset.count || "11";
+          const gName = gradeNameMap[g] || `${g}年級`;
+          let base = window.location.href.split("?")[0];
+          const newRoom = "YMPS113_G" + g + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
+          const link = `${base}?room=${newRoom}&grade=${g}&count=${c}&clean=1&openExternalBrowser=1`;
+          safeCopy(link, `${gName} 全新專屬填報連結：`);
+          showToast(`🎉 已成功複製【${gName}】全新專屬填報連結！
+發給該學年老師，點開就是 0 班全新的獨立房間！`, "✅");
+        });
+      });
 
       // Quick Config Jump Buttons
       const jumpToSettings = () => {
@@ -1945,34 +1809,6 @@
       };
       document.getElementById("btn-quick-config").addEventListener("click", jumpToSettings);
       document.getElementById("btn-open-grade-modal").addEventListener("click", jumpToSettings);
-
-      // Quick Dropdown helpers in settings
-      document.getElementById("quick-subject-select").addEventListener("change", e => {
-        if (e.target.value) {
-          document.getElementById("info-subject").value = e.target.value;
-          appState.subject = e.target.value;
-          saveState();
-          renderApp();
-        }
-      });
-
-      document.getElementById("quick-period-select").addEventListener("change", e => {
-        if (e.target.value) {
-          document.getElementById("info-exam-period").value = e.target.value;
-          appState.examPeriod = e.target.value;
-          saveState();
-          renderApp();
-        }
-      });
-
-      document.getElementById("quick-version-select").addEventListener("change", e => {
-        if (e.target.value) {
-          document.getElementById("info-version").value = e.target.value;
-          appState.version = e.target.value;
-          saveState();
-          renderApp();
-        }
-      });
 
       // Grade & Class Count Generator Apply
       document.getElementById("btn-apply-generator").addEventListener("click", () => {
@@ -1993,333 +1829,146 @@
           appState.classData[c] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
         });
         appState.selectedClass = newList[0];
-        appState.roomCode = ""; // Reset room to generate new grade room on demand
+        appState.roomCode = "YMPS113_G" + gNum + "_" + Math.random().toString(36).substring(2, 7).toUpperCase();
         saveState();
         renderApp();
-        showToast(`已成功套用【${gName}】共 ${cCount} 個班級（${newList[0]}~${newList[newList.length-1]}）！`, "🎉");
+        showToast(`已成功套用【${gName} ${cCount} 班】設定！`, "✅");
       });
 
-      // Quick Stepper Buttons (+ / -) for easy mobile tapping
-      document.querySelectorAll(".btn-step-plus").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const input = document.getElementById(btn.dataset.target);
-          if (input) {
-            input.value = Math.max(0, (parseInt(input.value || 0, 10) + 1));
-            input.dispatchEvent(new Event("input"));
-          }
-        });
-      });
-
-      document.querySelectorAll(".btn-step-minus").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const input = document.getElementById(btn.dataset.target);
-          if (input) {
-            input.value = Math.max(0, (parseInt(input.value || 0, 10) - 1));
-            input.dispatchEvent(new Event("input"));
-          }
-        });
-      });
-
-      // Input Focus: Header is not sticky so it scrolls away naturally.
-      document.querySelectorAll(".score-input, #input-class-note, #info-school, #info-year, #info-subject, #info-exam-period, #info-teacher, #info-version, #info-grade-label, #import-code-area, #textarea-reflection").forEach(input => {
-        input.addEventListener("focus", function() {
-          if (this.classList.contains("score-input") && this.value === "0") {
-            this.value = "";
-          }
-          setTimeout(() => {
-            this.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 150);
-        });
-
-        input.addEventListener("blur", function() {
-          if (this.classList.contains("score-input") && this.value === "") {
-            this.value = "0";
-            this.dispatchEvent(new Event("input"));
-          }
-        });
-
-        if (input.classList.contains("score-input")) {
-          input.addEventListener("input", function() {
-            const c100 = parseInt(document.getElementById("input-score-100").value || 0, 10);
-            const c90 = parseInt(document.getElementById("input-score-90").value || 0, 10);
-            const c80 = parseInt(document.getElementById("input-score-80").value || 0, 10);
-            const c70 = parseInt(document.getElementById("input-score-70").value || 0, 10);
-            const c60 = parseInt(document.getElementById("input-score-60").value || 0, 10);
-            const cBelow60 = parseInt(document.getElementById("input-score-below60").value || 0, 10);
-            const total = c100 + c90 + c80 + c70 + c60 + cBelow60;
-            const cHigh = c100 + c90;
-            const pass = total - cBelow60;
-            const pRate = total > 0 ? ((pass / total) * 100).toFixed(1) : 0;
-            const hRate = total > 0 ? ((cHigh / total) * 100).toFixed(1) : 0;
-            const rRate = total > 0 ? ((cBelow60 / total) * 100).toFixed(1) : 0;
-
-            document.getElementById("stat-class-total").textContent = `${total} 人`;
-            document.getElementById("stat-class-high").textContent = `${cHigh} 人 (${hRate}%)`;
-            document.getElementById("stat-class-pass").textContent = `${pass} 人 (${pRate}%)`;
-            document.getElementById("stat-class-remedial").textContent = `${cBelow60} 人 (${rRate}%)`;
-          });
-        }
-      });
-
-      // Class Switcher
-      document.getElementById("current-class-selector").addEventListener("change", e => {
-        appState.selectedClass = e.target.value;
-        renderApp();
-      });
-
-      // Save Class: Saves locally and immediately uploads to remote cloud room
-      document.getElementById("btn-save-class").addEventListener("click", () => {
-        const cId = appState.selectedClass;
-        const c100 = parseInt(document.getElementById("input-score-100").value || 0, 10);
-        const c90 = parseInt(document.getElementById("input-score-90").value || 0, 10);
-        const c80 = parseInt(document.getElementById("input-score-80").value || 0, 10);
-        const c70 = parseInt(document.getElementById("input-score-70").value || 0, 10);
-        const c60 = parseInt(document.getElementById("input-score-60").value || 0, 10);
-        const cBelow60 = parseInt(document.getElementById("input-score-below60").value || 0, 10);
-        const note = document.getElementById("input-class-note").value.trim();
-
-        appState.classData[cId] = {
-          c100, c90, c80, c70, c60, cBelow60,
-          note,
-          filled: true,
-          updatedAt: new Date().toISOString()
-        };
-
+      // Inputs in Settings
+      document.getElementById("info-school").addEventListener("input", e => {
+        appState.school = e.target.value;
         saveState();
         renderApp();
-
-        // Push to Real Remote Cloud Room
-        uploadClassToCloudRoom(cId);
       });
-
-      // Clear Class
-      document.getElementById("btn-clear-class").addEventListener("click", () => {
-        const cId = appState.selectedClass;
-        appState.classData[cId] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
+      document.getElementById("info-year").addEventListener("input", e => {
+        appState.year = e.target.value;
         saveState();
         renderApp();
-        showToast(`已清空 ${cId} 班數據`);
+      });
+      document.getElementById("info-semester").addEventListener("change", e => {
+        appState.semester = e.target.value;
+        saveState();
+        renderApp();
+      });
+      document.getElementById("info-subject").addEventListener("input", e => {
+        appState.subject = e.target.value;
+        saveState();
+        renderApp();
+      });
+      document.getElementById("info-exam-period").addEventListener("input", e => {
+        appState.examPeriod = e.target.value;
+        saveState();
+        renderApp();
+      });
+      document.getElementById("info-teacher").addEventListener("input", e => {
+        appState.teacher = e.target.value;
+        saveState();
+        renderApp();
+      });
+      document.getElementById("info-version").addEventListener("input", e => {
+        appState.version = e.target.value;
+        saveState();
+        renderApp();
+      });
+      document.getElementById("info-grade-label").addEventListener("input", e => {
+        appState.gradeLabel = e.target.value;
+        saveState();
+        renderApp();
       });
 
-      // Copy Single Class Code
-      document.getElementById("btn-copy-class-code").addEventListener("click", () => {
-        const cId = appState.selectedClass;
-        const d = appState.classData[cId];
-        if (!d || !d.filled) {
-          showToast("請先點擊「儲存」填報本班數據後再複製代碼！", "⚠️");
-          return;
-        }
-        const codePayload = {
-          class: cId,
-          subject: appState.subject,
-          grade: appState.gradeNum,
-          c100: d.c100,
-          c90: d.c90,
-          c80: d.c80,
-          c70: d.c70,
-          c60: d.c60,
-          cBelow60: d.cBelow60,
-          note: d.note || ""
-        };
-        const compactCode = `[GRADE_DATA]:${btoa(encodeURIComponent(JSON.stringify(codePayload)))}`;
-        safeCopy(compactCode, `已複製 ${cId} 班級代碼 (可直接貼到學年 LINE 群)：`);
-      });
-
-      // Settings inputs
-      document.getElementById("info-school").addEventListener("input", e => { appState.school = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-year").addEventListener("input", e => { appState.year = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-semester").addEventListener("change", e => { appState.semester = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-subject").addEventListener("input", e => { appState.subject = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-exam-period").addEventListener("input", e => { appState.examPeriod = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-teacher").addEventListener("input", e => { appState.teacher = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-version").addEventListener("input", e => { appState.version = e.target.value; saveState(); renderApp(); });
-      document.getElementById("info-grade-label").addEventListener("input", e => { appState.gradeLabel = e.target.value; saveState(); renderApp(); });
-
-      // Total Classes Select
-      document.getElementById("select-total-classes").addEventListener("change", e => {
-        const val = e.target.value;
-        const customBox = document.getElementById("custom-classes-box");
-        if (val === "custom") {
-          customBox.classList.remove("hidden");
-        } else {
-          customBox.classList.add("hidden");
-        }
-      });
-
-      // Apply Classes
-      document.getElementById("btn-apply-classes").addEventListener("click", () => {
-        const selVal = document.getElementById("select-total-classes").value;
-        let newList = [];
-        if (selVal === "custom") {
-          const raw = document.getElementById("input-custom-classes").value.trim();
-          if (raw) {
-            newList = raw.split(/[,，\s]+/).filter(x => x.length > 0);
-          }
-        } else {
-          const count = parseInt(selVal, 10);
-          newList = generateClassList(appState.gradeNum || "3", count);
-          const gName = gradeNameMap[appState.gradeNum] || `${appState.gradeNum}年級`;
-          appState.gradeLabel = `${gName} 1~${count} 班`;
-          document.getElementById("info-grade-label").value = appState.gradeLabel;
-        }
-
-        if (newList.length > 0) {
-          appState.classList = newList;
-          appState.classData = {};
-          newList.forEach(c => {
-            appState.classData[c] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
-          });
-          appState.selectedClass = newList[0];
+      // Quick Dropdown helpers in settings
+      document.getElementById("quick-subject-select").addEventListener("change", e => {
+        if (e.target.value) {
+          document.getElementById("info-subject").value = e.target.value;
+          appState.subject = e.target.value;
           saveState();
           renderApp();
-          showToast(`已成功套用學年班級清單（共 ${newList.length} 班）！`);
         }
       });
-
-      // Toggle Detailed Breakdown Table
-      document.getElementById("btn-toggle-view").addEventListener("click", () => {
-        const container = document.getElementById("breakdown-container");
-        const btn = document.getElementById("btn-toggle-view");
-        if (container.classList.contains("hidden")) {
-          container.classList.remove("hidden");
-          btn.textContent = "隱藏各班細節對照表";
-        } else {
-          container.classList.add("hidden");
-          btn.textContent = "切換「各班橫向細節對照表」";
-        }
-      });
-
-      // Share Modal Popup
-      document.getElementById("btn-share-code").addEventListener("click", () => {
-        document.getElementById("share-modal").classList.remove("hidden");
-      });
-      document.getElementById("btn-close-share").addEventListener("click", () => {
-        document.getElementById("share-modal").classList.add("hidden");
-      });
-
-      // Import Line Code Helper
-      const handleImportCode = (raw) => {
-        if (!raw) {
-          showToast("請先貼上代碼！", "⚠️");
-          return;
-        }
-        try {
-          let jsonStr = "";
-          if (raw.includes("[GRADE_DATA]:")) {
-            const b64 = raw.split("[GRADE_DATA]:")[1].trim();
-            jsonStr = decodeURIComponent(atob(b64));
-          } else if (raw.startsWith("{") && raw.endsWith("}")) {
-            jsonStr = raw;
-          } else {
-            throw new Error("無效的代碼格式");
-          }
-
-          const parsed = JSON.parse(jsonStr);
-          if (!parsed.class) throw new Error("缺少班級代碼");
-
-          const cId = String(parsed.class);
-          if (!appState.classList.includes(cId)) {
-            appState.classList.push(cId);
-          }
-
-          appState.classData[cId] = {
-            c100: Number(parsed.c100 || 0),
-            c90: Number(parsed.c90 || 0),
-            c80: Number(parsed.c80 || 0),
-            c70: Number(parsed.c70 || 0),
-            c60: Number(parsed.c60 || 0),
-            cBelow60: Number(parsed.cBelow60 || 0),
-            note: parsed.note || "",
-            filled: true,
-            updatedAt: new Date().toISOString()
-          };
-
-          appState.selectedClass = cId;
+      document.getElementById("quick-period-select").addEventListener("change", e => {
+        if (e.target.value) {
+          document.getElementById("info-exam-period").value = e.target.value;
+          appState.examPeriod = e.target.value;
           saveState();
           renderApp();
-          showToast(`成功匯入 ${cId} 班成績數據並已即時加總！`, "🎉");
-        } catch (err) {
-          showToast("代碼解析失敗，請確認代碼格式！", "❌");
         }
-      };
-
-      document.getElementById("btn-do-import").addEventListener("click", () => {
-        const raw = document.getElementById("import-code-area").value.trim();
-        handleImportCode(raw);
-        document.getElementById("import-code-area").value = "";
+      });
+      document.getElementById("quick-version-select").addEventListener("change", e => {
+        if (e.target.value) {
+          document.getElementById("info-version").value = e.target.value;
+          appState.version = e.target.value;
+          saveState();
+          renderApp();
+        }
       });
 
-      document.getElementById("btn-modal-do-import").addEventListener("click", () => {
-        const raw = document.getElementById("modal-import-code-area").value.trim();
-        handleImportCode(raw);
-        document.getElementById("modal-import-code-area").value = "";
-        document.getElementById("share-modal").classList.add("hidden");
-      });
-
-      // Export JSON
-      document.getElementById("btn-copy-all-export").addEventListener("click", () => {
-        const fullBackup = JSON.stringify(appState, null, 2);
-        safeCopy(fullBackup, "全學年完整備份 JSON 資料：");
-      });
-
-      // Reflection
-      document.getElementById("btn-generate-reflection").addEventListener("click", () => {
-        generateReflection(true);
-      });
+      // Reflection Tab listeners
       document.getElementById("textarea-reflection").addEventListener("input", e => {
         appState.reflection = e.target.value;
         saveState();
       });
-      document.getElementById("btn-insert-sample").addEventListener("click", () => {
-        const snippet = `\n\n【定期評量後續學習扶助叮嚀】：\n1. 請各班將 60 分以下學童列冊，進行個別弱點章節診斷測驗。\n2. 由各班任課教師回傳差異化學習輔導紀錄，落實課堂即時補救。`;
-        const ta = document.getElementById("textarea-reflection");
-        ta.value += snippet;
-        appState.reflection = ta.value;
+      document.getElementById("btn-regenerate-reflection").addEventListener("click", () => {
+        const s = calculateSummary();
+        appState.reflection = generateReflectionDraft(s);
+        document.getElementById("textarea-reflection").value = appState.reflection;
         saveState();
-        showToast("已加入後續補強叮嚀文字！");
+        showToast("已依最新全學年數據重新產出反思文字！", "💡");
       });
       document.getElementById("btn-copy-reflection").addEventListener("click", () => {
-        const text = document.getElementById("textarea-reflection").value;
-        safeCopy(text, "反思修正文字：");
+        safeCopy(document.getElementById("textarea-reflection").value, "反思修正文字：");
       });
-
-      // Copy Modal controls
-      document.getElementById("btn-close-copy-modal").addEventListener("click", () => {
-        document.getElementById("copy-modal").classList.add("hidden");
-      });
-      document.getElementById("btn-select-copy-modal").addEventListener("click", () => {
-        const ta = document.getElementById("copy-modal-text");
-        ta.focus();
-        ta.select();
-        showToast("文字已全選，可直接按複製！");
-      });
-
-      // Demo & Reset
-      document.getElementById("btn-load-demo").addEventListener("click", loadUniversalDemo);
-      document.getElementById("btn-reset-all").addEventListener("click", () => {
-        appState.classData = {};
-        appState.reflection = "";
-        appState.classList.forEach(c => {
-          appState.classData[c] = { c100: 0, c90: 0, c80: 0, c70: 0, c60: 0, cBelow60: 0, note: "", filled: false };
-        });
+      document.getElementById("btn-insert-sample").addEventListener("click", () => {
+        const ta = document.getElementById("textarea-reflection");
+        ta.value += "\n\n五、補救教學執行規劃：\n針對未達及格標準學生，於每週二早自習進行 20 分鐘重點補強，著重基礎題型與字音字形精熟，並於次週進行二次檢測確認學習成效。";
+        appState.reflection = ta.value;
         saveState();
-        generateReflection(false);
-        renderApp();
-        showToast("已清空所有班級填報數據。");
+        showToast("已成功插入教學精進規劃範例");
       });
 
-      // Print Preview Modal
-      const openPrintModal = () => {
-        updatePrintModalContent();
-        document.getElementById("print-modal").classList.remove("hidden");
-      };
-      document.getElementById("btn-preview-print").addEventListener("click", openPrintModal);
-      document.getElementById("btn-settings-preview-print").addEventListener("click", openPrintModal);
-      document.getElementById("btn-close-modal").addEventListener("click", () => {
+      // Demo Data Loader (3年級8班示範)
+      document.getElementById("btn-load-demo").addEventListener("click", () => {
+        if (confirm("確定要載入示範數據嗎？這將覆蓋現有班級輸入。")) {
+          const demoCounts = [
+            { c100: 2, c90: 16, c80: 8, c70: 3, c60: 1, cBelow60: 0, note: "整體作答穩定，字形題稍有錯漏" },
+            { c100: 0, c90: 14, c80: 10, c70: 4, c60: 2, cBelow60: 1, note: "閱讀測驗長篇文意理解較弱" },
+            { c100: 1, c90: 15, c80: 9, c70: 3, c60: 1, cBelow60: 1, note: "需加強審題習慣" },
+            { c100: 0, c90: 18, c80: 7, c70: 2, c60: 1, cBelow60: 0, note: "精熟群表現優異" },
+            { c100: 3, c90: 13, c80: 8, c70: 5, c60: 1, cBelow60: 0, note: "作文發揮良好" },
+            { c100: 0, c90: 15, c80: 10, c70: 3, c60: 0, cBelow60: 0, note: "及格率100%" },
+            { c100: 1, c90: 12, c80: 9, c70: 4, c60: 2, cBelow60: 2, note: "後段學生需單元補救" },
+            { c100: 0, c90: 16, c80: 8, c70: 4, c60: 1, cBelow60: 0, note: "高分群密集" },
+            { c100: 1, c90: 14, c80: 9, c70: 3, c60: 2, cBelow60: 1, note: "各級距分佈平均" },
+            { c100: 2, c90: 15, c80: 7, c70: 3, c60: 1, cBelow60: 0, note: "審題細心度佳" },
+            { c100: 0, c90: 13, c80: 10, c70: 4, c60: 1, cBelow60: 1, note: "字音字形需再複習" }
+          ];
+          appState.classList.forEach((cId, idx) => {
+            const demo = demoCounts[idx % demoCounts.length];
+            appState.classData[cId] = { ...demo, filled: true, updatedAt: new Date().toISOString() };
+          });
+          const s = calculateSummary();
+          appState.reflection = generateReflectionDraft(s);
+          saveState();
+          renderApp();
+          showToast("已成功載入示範數據！", "⚡");
+        }
+      });
+
+      // Print Modal Triggers
+      document.getElementById("btn-open-print").addEventListener("click", openPrintModal);
+      document.getElementById("btn-close-print").addEventListener("click", () => {
         document.getElementById("print-modal").classList.add("hidden");
       });
       document.getElementById("btn-trigger-print").addEventListener("click", () => {
         window.print();
+      });
+
+      // Copy Modal Close
+      document.getElementById("btn-close-copy-modal").addEventListener("click", () => {
+        document.getElementById("copy-modal").classList.add("hidden");
+      });
+      document.getElementById("btn-confirm-copy").addEventListener("click", () => {
+        document.getElementById("copy-modal").classList.add("hidden");
       });
     }
 
@@ -2327,20 +1976,15 @@
       loadState();
       setupEventListeners();
       renderApp();
-      
-      // Auto sync or auto init cloud room
+
       if (appState.roomCode) {
         syncCloudRoom(false);
       } else {
-        // Proactively initialize room in background so it is ready immediately
-        initCloudRoomIfNeeded().then(() => {
-          renderApp();
-        }).catch(() => {});
+        initCloudRoomIfNeeded().then(() => renderApp()).catch(() => {});
       }
 
-      // Periodic Auto-Sync every 25 seconds if page is visible and cloud room is active
       setInterval(() => {
-        if (document.visibilityState === "visible" && appState.roomCode && (appState.roomCode.startsWith("np_") || appState.roomCode.startsWith("rd_") || appState.roomCode.startsWith("ec_"))) {
+        if (document.visibilityState === "visible") {
           syncCloudRoom(false);
         }
       }, 12000);
